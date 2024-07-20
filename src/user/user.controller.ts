@@ -4,7 +4,10 @@ import { createUserDTO, loginDTO, updateUserDTO } from './DTO';
 import { User } from './entities/user.entities';
 import { Request, Response } from 'express';
 import { JwtAuthGuard } from './Guard/jwt.guard';
+import { ApiResponse, ApiTags } from '@nestjs/swagger';
 
+@ApiTags('user')
+@ApiResponse({status: 200, description: '성공'})
 @Controller('user')
 export class UserController {
   constructor(private readonly userService: UserService) {}
