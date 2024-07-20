@@ -4,20 +4,27 @@ import { UserController } from './user.controller';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { User } from './entities/user.entities';
 import { ConfigModule, ConfigService } from '@nestjs/config';
-import { JwtConfigService } from 'src/config/jwt.config';
 import { JwtModule } from '@nestjs/jwt';
+import { PassportModule } from '@nestjs/passport';
+import { JwtStrategy } from '../config/jwt.strategy';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([User]),
-    JwtModule.registerAsync({
-      imports: [ConfigModule],
-      useClass: JwtConfigService,
+    TypeOrmModule.forFeature([User]), // 1. User 엔티티에 대한 TypeORM 레포지토리를 모듈에 등록
+    PassportModule.register({ defaultStrategy: 'jwt' }),
+    JwtModule.registerAsync({     // 2. 비동기 방식으로 JwtModule을 등록
+      imports: [ConfigModule], //환경변수 사용
+      useFactory: async (configService: ConfigService) => ({
+        secret: configService.get<string>('JWT_SECRET'),
+        signOptions: { expiresIn: '3600s' },
+      }),
       inject: [ConfigService],
     }),
+    ConfigModule,
   ], //모듈에서 사용할 레포지토리 등록
   controllers: [UserController],
-  providers: [UserService],
+  providers: [UserService, JwtStrategy],
+  exports: [UserService],
 })
 export class UserModule {}
 
