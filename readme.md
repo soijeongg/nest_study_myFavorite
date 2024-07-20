@@ -3,4 +3,4 @@ nest.js 공부를 위한 프로젝트
 내 최애들을 소개하고 최애의 사진 공유 및 댓글로 소통
 
 ### 사용 스택
-typeScript, nest.js, docker, aws S3, aws ECR, aws EC2, kubernetes, react-native
+typeScript, nest.js, docker, aws S3, aws ECR, aws EC2, kubernetes, react
