@@ -7,17 +7,15 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { JwtModule } from '@nestjs/jwt';
 import { PassportModule } from '@nestjs/passport';
 import { JwtStrategy } from '../config/jwt.strategy';
-
+import { JwtConfigService } from 'src/config/jwt.config';
 @Module({
   imports: [
     TypeOrmModule.forFeature([User]), // 1. User 엔티티에 대한 TypeORM 레포지토리를 모듈에 등록
     PassportModule.register({ defaultStrategy: 'jwt' }),
-    JwtModule.registerAsync({     // 2. 비동기 방식으로 JwtModule을 등록
+    JwtModule.registerAsync({
+      // 2. 비동기 방식으로 JwtModule을 등록
       imports: [ConfigModule], //환경변수 사용
-      useFactory: async (configService: ConfigService) => ({
-        secret: configService.get<string>('JWT_SECRET'),
-        signOptions: { expiresIn: '3600s' },
-      }),
+      useClass: JwtConfigService, // JwtConfigService를 사용하여 설정 제공
       inject: [ConfigService],
     }),
     ConfigModule,

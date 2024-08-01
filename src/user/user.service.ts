@@ -1,13 +1,14 @@
-import { Injectable,HttpException, HttpStatus} from "@nestjs/common";
+import { Injectable, HttpException, HttpStatus } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Repository, DeleteResult } from 'typeorm';
 import { JwtService } from '@nestjs/jwt';
 import * as argon2 from 'argon2';
 import { User } from './entities/user.entities';
-import { createUserDTO, loginDTO } from './DTO';
+import { createUserDTO, loginDTO, updateUserDTO } from './DTO';
+import { IuserService } from './interface/IuserService';
 //서비스는 모든 비즈니스 로직을 처리한다  -> 레포지토리는 오직 db접근만
 @Injectable()
-export class UserService {
+export class UserService implements IuserService {
   constructor(
     @InjectRepository(User) private userRepository: Repository<User>,
     private readonly jwtService: JwtService, //JwtService는 AuthModule에서 설정한 JwtModule을 통해 제공된 설정을 사용하여 작동
@@ -48,5 +49,27 @@ export class UserService {
   }
   async findUserByID(userId: number): Promise<User | null> {
     return this.userRepository.findOne({ where: { userId } });
+  }
+  async updateUserService(updateDTO: updateUserDTO): Promise<User> {
+    const { email, username, password } = updateDTO;
+    const user = await this.userRepository.findOne({ where: { email } });
+    if (!user) {
+      throw new HttpException('해당하는 유저가 없습니다', HttpStatus.NOT_FOUND);
+    }
+    if (username) {
+      user.username = username;
+    }
+    if (password) {
+      user.password = password;
+    }
+    return await this.userRepository.save(user);
+  }
+  async deleteUserService(userId: number): Promise<boolean> {
+    const user = await this.userRepository.findOne({ where: { userId } });
+    if (!user) {
+      throw new HttpException('해당하는 유저가 없습니다', HttpStatus.NOT_FOUND);
+    }
+    const deleteResult: DeleteResult = await this.userRepository.delete(userId);
+    return deleteResult.affected > 0;
   }
 }

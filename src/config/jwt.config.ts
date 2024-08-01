@@ -18,3 +18,4 @@ export class JwtConfigService implements JwtOptionsFactory {
 }
 
 // JwtModuleOptions JwtModule을 설정시 사용하는 옵션들(secret, signOptions(시간), verifyOptions(알고리즘 선택)
+//비밀키 유효시간등 기본적인 jwt의 설정

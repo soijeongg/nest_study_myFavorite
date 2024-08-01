@@ -9,8 +9,8 @@ async function bootstrap() {
   app.useGlobalPipes(new ValidationPipe());
   app.useGlobalFilters(new httpExceptionFilter());
   const config = new DocumentBuilder()
-    .setTitle('API Documentation')
-    .setDescription('The API description')
+    .setTitle('simple posts')
+    .setDescription('simple posts description')
     .setVersion('1.0')
     .build();
   const document = SwaggerModule.createDocument(app, config);

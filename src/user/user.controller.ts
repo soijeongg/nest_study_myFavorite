@@ -5,14 +5,15 @@ import { User } from './entities/user.entities';
 import { Request, Response } from 'express';
 import { JwtAuthGuard } from './Guard/jwt.guard';
 import { ApiResponse, ApiTags } from '@nestjs/swagger';
+import { IuserController } from './interface/IuserController';
 
 @ApiTags('user')
-@ApiResponse({status: 200, description: '성공'})
+@ApiResponse({ status: 200, description: '성공' })
 @Controller('user')
-export class UserController {
+export class UserController implements IuserController {
   constructor(private readonly userService: UserService) {}
   @Get()
-  async findAllController() {
+  async findAllController(): Promise<User[]> {
     return this.userService.getAllService();
   }
 
@@ -22,21 +23,43 @@ export class UserController {
   }
 
   @Post('/login')
-  async loginController(@Body() LoginDTO: loginDTO, @Res() res: Response) {
+  async loginController(
+    @Body() LoginDTO: loginDTO,
+    @Res() res: Response,
+  ): Promise<void> {
     const accessToken = await this.userService.loginUserService(LoginDTO);
     res.setHeader('Authorization', `Bearer ${accessToken}`);
-    return res
-      .status(HttpStatus.OK)
-      .json({ message: '로그인 성공', accessToken });
+    res.status(HttpStatus.OK).json({ message: '로그인 성공', accessToken });
   }
 
   @Put()
   @UseGuards(JwtAuthGuard)
   async updateUserController(
     @Body() updateDTO: updateUserDTO,
+    @Res() res: Response,
+  ): Promise<void> {
+    await this.userService.updateUserService(updateDTO);
+    res.status(HttpStatus.OK).json({ message: 'User updated successfully' });
+  }
+
+  @Delete()
+  @UseGuards(JwtAuthGuard)
+  async deleteUserController(
     @Req() req: Request,
-  ) {
-    const user = req.user;
-    return user;
+    @Res() res: Response,
+  ): Promise<void> {
+    const user = req.user as User;
+    await this.userService.deleteUserService(user.userId);
+    res.status(HttpStatus.OK).json({ message: '삭제가 완료되었습니다' });
+  }
+
+  @Get()
+  @UseGuards(JwtAuthGuard)
+  async getuserIdController(
+    @Req() req: Request,
+    @Res() res: Response,
+  ): Promise<User> {
+    const user = req.user as User;
+    return this.userService.findUserByID(user.userId);
   }
 }
