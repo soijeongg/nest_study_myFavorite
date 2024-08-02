@@ -1,9 +1,20 @@
-import { Controller, Body, Param, Get, Post, Put, Delete, HttpStatus, UseGuards,Res, Req } from '@nestjs/common';
+import {
+  Controller,
+  Body,
+  Get,
+  Post,
+  Put,
+  Delete,
+  HttpStatus,
+  UseGuards,
+  Res,
+  Req,
+} from '@nestjs/common';
 import { UserService } from './user.service';
 import { createUserDTO, loginDTO, updateUserDTO } from './DTO';
 import { User } from './entities/user.entities';
 import { Request, Response } from 'express';
-import { JwtAuthGuard } from './Guard/jwt.guard';
+import { JwtAuthGuard } from '../Guard/jwt.guard';
 import { ApiResponse, ApiTags } from '@nestjs/swagger';
 import { IuserController } from './interface/IuserController';
 
