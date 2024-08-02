@@ -1,4 +1,88 @@
-import { Controller } from '@nestjs/common';
+import {
+  Controller,
+  UploadedFile,
+  Req,
+  Put,
+  Res,
+  Get,
+  Post,
+  Body,
+  Param,
+  Delete,
+  UseGuards,
+  UseInterceptors,
+  HttpStatus,
+} from '@nestjs/common';
+import { PostService } from './post.service';
+import { diskStorage } from 'multer';
+import { extname } from 'path';
+import { Response, Request } from 'express';
+import { CreatePostDto } from './dto/create-post.dto';
+import { UpdatePostDto } from './dto/update-post.dto';
+import { JwtAuthGuard } from 'src/Guard/jwt.guard';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { User } from 'src/user/entities/user.entities';
+import { Posts } from './entities/post.entities';
+import { IpostController } from './interface/IpostController';
 
 @Controller('post')
-export class PostController {}
+export class PostController implements IpostController {
+  constructor(private readonly postService: PostService) {}
+
+  @UseGuards(JwtAuthGuard)
+  @Post()
+  @UseInterceptors(
+    FileInterceptor('file', {
+      storage: diskStorage({
+        destination: './uploads',
+        filename: (req, file, callback) => {
+          const uniqueSuffix =
+            Date.now() + '-' + Math.round(Math.random() * 1e9);
+          const ext = extname(file.originalname);
+          callback(null, `${file.fieldname}-${uniqueSuffix}${ext}`);
+        },
+      }),
+    }),
+  )
+  async createPost(
+    @UploadedFile() file: Express.Multer.File,
+    @Body() createPostDto: CreatePostDto,
+    @Req() req: Request,
+  ): Promise<Posts> {
+    const user = req.user as User;
+    return this.postService.createPostService(
+      createPostDto,
+      file.filename,
+      user,
+    );
+  }
+
+  @Get()
+  async findAllPosts(): Promise<Posts[]> {
+    return this.postService.findAllPostService();
+  }
+
+  @Get(':id')
+  async findOnePost(@Param('id') id: string) {
+    return this.postService.findOnePostService(+id);
+  }
+
+  @Put(':id')
+  async updatePost(
+    @Param('id') id: string,
+    @Body() updatePostDto: UpdatePostDto,
+    @UploadedFile() file?: Express.Multer.File,
+  ): Promise<Posts> {
+    const imageUrl = file ? file.filename : null;
+    return this.postService.updatePostService(+id, updatePostDto, imageUrl);
+  }
+
+  @Delete(':id')
+  async removePost(
+    @Param('id') id: string,
+    @Res() res: Response,
+  ): Promise<void> {
+    await this.postService.removePostService(+id);
+    res.status(HttpStatus.OK).json({ message: '삭제가 완료되었습니다' });
+  }
+}

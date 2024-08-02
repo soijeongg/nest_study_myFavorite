@@ -1,6 +1,11 @@
 import { TypeOrmModuleAsyncOptions } from '@nestjs/typeorm';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { User } from './user/entities/user.entities';
+import { Posts } from './post/entities/post.entities';
+import { Like } from './like/entities/like.entity';
+import { Favorite } from './favorite/entities/favorite.entity';
+import { Friend } from './friend/entities/friend.entity';
+import { Comment } from './comment/entities/comment.entity';
 
 ConfigModule.forRoot(); // .env 파일에서 환경 변수를 로드
 
@@ -18,7 +23,7 @@ export const dataSourceOptions: TypeOrmModuleAsyncOptions = {
     password: configService.get<string>('TYPEORM_PASSWORD'),
     database: configService.get<string>('TYPEORM_DATABASE'),
     synchronize: configService.get<boolean>('TYPEORM_SYNCHRONIZE'),
-    entities: [User],
+    entities: [User, Posts, Like, Favorite, Friend, Comment],
   }),
   inject: [ConfigService], //환경변수에서 설정값 가져옴
 };

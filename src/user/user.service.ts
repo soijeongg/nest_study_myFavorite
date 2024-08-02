@@ -43,7 +43,7 @@ export class UserService implements IuserService {
     if (!user) {
       throw new HttpException('로그인에 실패했습니다', HttpStatus.BAD_REQUEST);
     }
-    const payload = { id: user.userId, email: user.email };
+    const payload = { id: user.userId, status: user.status };
     const accessToken = await this.jwtService.signAsync(payload);
     return accessToken;
   }

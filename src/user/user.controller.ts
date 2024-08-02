@@ -15,6 +15,7 @@ import { createUserDTO, loginDTO, updateUserDTO } from './DTO';
 import { User } from './entities/user.entities';
 import { Request, Response } from 'express';
 import { JwtAuthGuard } from '../Guard/jwt.guard';
+import { adminGuard } from 'src/Guard/adminGuard';
 import { ApiResponse, ApiTags } from '@nestjs/swagger';
 import { IuserController } from './interface/IuserController';
 
@@ -23,7 +24,9 @@ import { IuserController } from './interface/IuserController';
 @Controller('user')
 export class UserController implements IuserController {
   constructor(private readonly userService: UserService) {}
+
   @Get()
+  @UseGuards(adminGuard)
   async findAllController(): Promise<User[]> {
     return this.userService.getAllService();
   }

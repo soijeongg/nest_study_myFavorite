@@ -4,7 +4,8 @@ import { Like } from 'src/like/entities/like.entity';
 import { User } from 'src/user/entities/user.entities';
 import {
   Column,
-  PrimaryGeneratedColumn, Entity, DeleteDateColumn,
+  PrimaryGeneratedColumn,
+  Entity,
   UpdateDateColumn,
   CreateDateColumn,
   ManyToOne,
@@ -17,7 +18,7 @@ export class Posts {
   PostsId: number;
 
   @Column()
-  name: string;
+  title: string;
 
   @Column()
   description: string;
@@ -34,12 +35,12 @@ export class Posts {
   @ManyToOne(() => User, (user) => user.posts)
   user: User;
 
-  @ManyToOne(() => Favorite, favorite => favorite.posts)
+  @ManyToOne(() => Favorite, (favorite) => favorite.posts)
   favorite: Favorite;
 
-  @OneToMany(() => Like, like =>like.post)
+  @OneToMany(() => Like, (like) => like.post)
   likes: Like;
 
-  @OneToMany(() => Comment, Comment =>Comment.post)
+  @OneToMany(() => Comment, (Comment) => Comment.post)
   comments: Comment;
 }

@@ -27,6 +27,13 @@ export class User {
   @Column('varchar', { length: 100 })
   username: string;
 
+  @Column({
+    type: 'enum',
+    enum: ['admin', 'normal'],
+    default: 'normal',
+  })
+  staus: 'admin' | 'normal';
+
   @CreateDateColumn()
   createdAt: Date;
 
@@ -39,13 +46,13 @@ export class User {
   @OneToMany(() => Posts, (post) => post.user)
   posts: Posts[];
 
-  @OneToMany(() => Favorite, favorite =>favorite.user)
+  @OneToMany(() => Favorite, (favorite) => favorite.user)
   favorites: Favorite[];
 
-  @OneToMany(() => Comment, comment => comment.user)
+  @OneToMany(() => Comment, (comment) => comment.user)
   comments: Comment[];
 
-  @OneToMany(() => Like, like => like.user)
+  @OneToMany(() => Like, (like) => like.user)
   likes: Like[];
 
   @OneToMany(() => Friend, (friend) => friend.requester)
