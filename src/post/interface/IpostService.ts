@@ -10,11 +10,12 @@ export interface IpostService {
   ): Promise<Posts>;
   findAllPostService(): Promise<Posts[]>;
   findOnePostService(postId: number): Promise<Posts>;
-  removePostService(postId: number): Promise<boolean>;
+  removePostService(postId: number, user: User): Promise<boolean>;
   searchPostService(searchTerm: string): Promise<Posts[]>;
   updatePostService(
     id: number,
     updatePostDto: UpdatePostDto,
     imageUrl: string | null,
+    user: User,
   ): Promise<Posts>;
 }

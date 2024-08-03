@@ -9,4 +9,5 @@ export interface IuserController {
   getuserIdController(req: Request, res: Response): Promise<User>;
   updateUserController(updateDTO: updateUserDTO, res: Response): Promise<void>;
   deleteUserController(req: Request, res: Response): Promise<void>;
+  searchUserController(username: string): Promise<User[] | User | null>;
 }

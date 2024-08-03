@@ -17,8 +17,11 @@ export interface IpostController {
   updatePost(
     id: string,
     updateDto: UpdatePostDto,
+    req: Request,
     file?: Express.Multer.File,
   ): Promise<Posts>;
 
-  removePost(id: string, res: Response): Promise<void>;
+  removePost(id: string, res: Response, req: Request): Promise<void>;
+
+  searchpost(content: string): Promise<Posts[] | Posts>;
 }

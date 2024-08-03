@@ -1,6 +1,6 @@
 import { Injectable, HttpException, HttpStatus } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, DeleteResult } from 'typeorm';
+import { Repository, DeleteResult, Like } from 'typeorm';
 import { JwtService } from '@nestjs/jwt';
 import * as argon2 from 'argon2';
 import { User } from './entities/user.entities';
@@ -48,7 +48,14 @@ export class UserService implements IuserService {
     return accessToken;
   }
   async findUserByID(userId: number): Promise<User | null> {
-    return this.userRepository.findOne({ where: { userId } });
+    const user = await this.userRepository.findOne({ where: { userId } });
+    if (!user) {
+      throw new HttpException(
+        '해당하는 유저가 없습니다',
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+    return user;
   }
   async updateUserService(updateDTO: updateUserDTO): Promise<User> {
     const { email, username, password } = updateDTO;
@@ -71,5 +78,10 @@ export class UserService implements IuserService {
     }
     const deleteResult: DeleteResult = await this.userRepository.delete(userId);
     return deleteResult.affected > 0;
+  }
+  async searchUserService(username: string): Promise<User[] | User | null> {
+    return this.userRepository.find({
+      where: [{ username: Like(`%${username}%`) }],
+    });
   }
 }

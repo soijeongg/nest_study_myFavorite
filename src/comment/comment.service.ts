@@ -80,7 +80,22 @@ export class CommentService implements ICommentService {
     return this.CommentRepository.save(comment);
   }
 
-  async removeComment(postId: number, CommentId: number, user:User): Promise<boolean> {
+  async removeComment(
+    postId: number,
+    CommentId: number,
+    user: User,
+  ): Promise<boolean> {
+    const comment = await this.findOneService(CommentId);
+    if (!comment) {
+      throw new HttpException(
+        '해당하는 댓글이 없습니다',
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+    //유저가 맞는지 검사한다
+    if (comment.user != user) {
+      throw new HttpException('자신의 댓글이 아닙니다', HttpStatus.BAD_REQUEST);
+    }
     const deleteResult: DeleteResult =
       await this.CommentRepository.delete(CommentId);
     return deleteResult.affected > 0;

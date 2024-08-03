@@ -6,6 +6,7 @@ import { UpdateLikeDto } from './dto/update-like.dto';
 @Controller('like')
 export class LikeController {
   constructor(private readonly likeService: LikeService) {}
+  //생성, 삭제, 전체보기, 하나누르면 그 하나의 포스트만 보기
 
   @Post()
   create(@Body() createLikeDto: CreateLikeDto) {

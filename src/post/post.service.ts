@@ -53,6 +53,7 @@ export class PostService implements IpostService {
     id: number,
     updatePostDto: UpdatePostDto,
     imageUrl: string | null,
+    user: User,
   ) {
     const post = await this.postRepository.findOne({
       where: { PostsId: id },
@@ -60,6 +61,12 @@ export class PostService implements IpostService {
     if (!post) {
       throw new HttpException(
         '해당하는 포스트가 없습니다',
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+    if (post.user != user) {
+      throw new HttpException(
+        '자신의 포스트가 아닙니다',
         HttpStatus.BAD_REQUEST,
       );
     }
@@ -87,7 +94,22 @@ export class PostService implements IpostService {
     return await this.postRepository.save(post);
   }
 
-  async removePostService(id: number): Promise<boolean> {
+  async removePostService(id: number, user: User): Promise<boolean> {
+    const post = await this.postRepository.findOne({
+      where: { PostsId: id },
+    });
+    if (!post) {
+      throw new HttpException(
+        '해당하는 포스트가 없습니다',
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+    if (post.user != user) {
+      throw new HttpException(
+        '자신의 포스트가 아닙니다',
+        HttpStatus.BAD_REQUEST,
+      );
+    }
     const deleteResult: DeleteResult = await this.postRepository.delete(id);
     return deleteResult.affected > 0;
   }

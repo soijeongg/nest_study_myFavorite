@@ -76,4 +76,8 @@ export class UserController implements IuserController {
     const user = req.user as User;
     return this.userService.findUserByID(user.userId);
   }
+  @Get('search')
+  async searchUserController(username: string): Promise<User[] | User | null> {
+    return this.userService.searchUserService(username);
+  }
 }
