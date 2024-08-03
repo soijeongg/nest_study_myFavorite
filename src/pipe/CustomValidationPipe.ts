@@ -14,8 +14,7 @@ export class CustomValidationPipe extends ValidationPipe {
       ); //순회하면서 검사 에러가 왜 실패했는지
       return new BadRequestException({
         statusCode: 400,
-        message: '형식에 맞게 입력해주세요',
-        errors: messages,
+        message: messages,
       });
     };
   }

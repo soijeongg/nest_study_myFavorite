@@ -1,4 +1,4 @@
-import { HttpException, HttpStatus, Inject, Injectable } from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { CreatePostDto } from './dto/create-post.dto';
 import { UpdatePostDto } from './dto/update-post.dto';
 import { IpostService } from './interface/IpostService';
@@ -96,6 +96,7 @@ export class PostService implements IpostService {
       where: [
         { title: Like(`%${searchTerm}%`) },
         { description: Like(`%${searchTerm}%`) },
+        { comments: Like(`%${searchTerm}%`) },
       ],
     });
   }

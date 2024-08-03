@@ -2,13 +2,12 @@ import {
   Entity,
   Column,
   ManyToOne,
-  OneToMany,
   PrimaryGeneratedColumn,
   CreateDateColumn,
   UpdateDateColumn,
- } from "typeorm";
-import { Posts } from "src/post/entities/post.entities";
-import { User } from "src/user/entities/user.entities";
+} from 'typeorm';
+import { Posts } from 'src/post/entities/post.entities';
+import { User } from 'src/user/entities/user.entities';
 
 @Entity()
 export class Comment {
@@ -24,9 +23,9 @@ export class Comment {
   @UpdateDateColumn()
   updatedAt: Date;
 
-  @ManyToOne(() => Posts, post => post.comments)
+  @ManyToOne(() => Posts, (post) => post.comments)
   post: Posts;
 
-  @ManyToOne(() => User, user => user.comments)
+  @ManyToOne(() => User, (user) => user.comments)
   user: User;
 }
