@@ -1,35 +1,57 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Controller, Get, Post, Body, Put, Param, Delete, UseGuards, Req, Res, HttpStatus} from '@nestjs/common';
 import { LikeService } from './like.service';
-import { CreateLikeDto } from './dto/create-like.dto';
-import { UpdateLikeDto } from './dto/update-like.dto';
+import { ILikeController } from './interface/ILikeController';
+import { Like } from './entities/like.entity';
+import { JwtAuthGuard } from 'src/Guard/jwt.guard';
+import { Request, Response } from 'express';
+import { User } from 'src/user/entities/user.entities';
 
 @Controller('like')
-export class LikeController {
+export class LikeController implements ILikeController {
   constructor(private readonly likeService: LikeService) {}
   //생성, 삭제, 전체보기, 하나누르면 그 하나의 포스트만 보기
 
-  @Post()
-  create(@Body() createLikeDto: CreateLikeDto) {
-    return this.likeService.create(createLikeDto);
+  @UseGuards(JwtAuthGuard)
+  @Post(':postId')
+  async createLikeController(
+    @Param('postId') postId: string,
+    @Req() req: Request,
+  ): Promise<Like> {
+    const user = req.user as User;
+    return await this.likeService.createLikeService(+postId, user);
   }
 
+  @Get(':username')
+  async getOneLikeController(
+    @Param('username') username: string,
+  ): Promise<Like[]> {
+    return await this.likeService.getOtherLikeService(username);
+  }
+
+  @UseGuards(JwtAuthGuard)
   @Get()
-  findAll() {
-    return this.likeService.findAll();
+  async getAllLikeController( @Req() req: Request,  @Res() res: Response): Promise<Like[]> {
+    const user = req.user as User;
+    return await this.likeService.getAllLikeService(user);
   }
 
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.likeService.findOne(+id);
+  @UseGuards(JwtAuthGuard)
+  @Delete(':postId')
+  async deleteLikeController(
+    postId: string,
+    @Req() req: Request,
+    @Res() res: Response,
+  ): Promise<void> {
+    const user = req.user as User;
+    await this.likeService.deleteLikeService(+postId, user);
+    res.status(HttpStatus.OK).json({ message: '삭제가 완료되었습니다' });
   }
 
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateLikeDto: UpdateLikeDto) {
-    return this.likeService.update(+id, updateLikeDto);
-  }
-
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.likeService.remove(+id);
+  @Get(':username')
+  async searchLikeController(
+    searchTerm: string,
+    @Param('username') username: string,
+  ): Promise<Like[]> {
+    return await this.likeService.searchLikeService(searchTerm, username);
   }
 }

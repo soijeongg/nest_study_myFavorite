@@ -54,7 +54,7 @@ export class CommentController implements ICommentController {
   }
   @UseGuards(JwtAuthGuard)
   @Delete(':postId/comments/:commentId')
-  async emoveComment(
+  async removeComment(
     @Param('postId') postId: string,
     @Param('commentId') commentId: string,
     @Req() req: Request,

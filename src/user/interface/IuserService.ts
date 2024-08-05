@@ -10,4 +10,5 @@ export interface IuserService {
   updateUserService(updateDTO: updateUserDTO): Promise<User>;
   deleteUserService(userId: number): Promise<boolean>;
   searchUserService(username: string): Promise<User[] | User | null>;
+  getOtherUserService(username: string): Promise<User>;
 }

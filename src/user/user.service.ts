@@ -64,10 +64,17 @@ export class UserService implements IuserService {
       throw new HttpException('해당하는 유저가 없습니다', HttpStatus.NOT_FOUND);
     }
     if (username) {
+      const check = await this.getOtherUserService(username);
+      if (check) {
+        throw new HttpException(
+          '중복된 이름이 존재합니다',
+          HttpStatus.BAD_REQUEST,
+        );
+      }
       user.username = username;
     }
     if (password) {
-      user.password = password;
+      user.password = await argon2.hash(password);
     }
     return await this.userRepository.save(user);
   }
@@ -82,6 +89,14 @@ export class UserService implements IuserService {
   async searchUserService(username: string): Promise<User[] | User | null> {
     return this.userRepository.find({
       where: [{ username: Like(`%${username}%`) }],
+    });
+  }
+
+  async getOtherUserService(username: string): Promise<User> {
+    return await this.userRepository.findOne({
+      where: {
+        username: username,
+      },
     });
   }
 }

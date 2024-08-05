@@ -16,5 +16,5 @@ export interface ICommentController {
     req: Request,
   ): Promise<Comment>;
 
-  removeComment(postId: string, commentId: string, req: Request, res:Response): Promise<boolean>;
+  removeComment(postId: string, commentId: string, req: Request, res:Response): Promise<void>;
 }

@@ -9,6 +9,7 @@ import {
   UseGuards,
   Res,
   Req,
+  Param,
 } from '@nestjs/common';
 import { UserService } from './user.service';
 import { createUserDTO, loginDTO, updateUserDTO } from './DTO';
@@ -76,8 +77,16 @@ export class UserController implements IuserController {
     const user = req.user as User;
     return this.userService.findUserByID(user.userId);
   }
+
   @Get('search')
   async searchUserController(username: string): Promise<User[] | User | null> {
     return this.userService.searchUserService(username);
+  }
+
+  @Get(':username')
+  async getOtherUserController(
+    @Param('username') username: string,
+  ): Promise<User> {
+    return await this.userService.getOtherUserService(username);
   }
 }

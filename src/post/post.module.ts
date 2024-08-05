@@ -11,6 +11,6 @@ import { User } from 'src/user/entities/user.entities';
   imports: [TypeOrmModule.forFeature([Posts, Favorite, User])],
   controllers: [PostController],
   providers: [PostService, JwtAuthGuard],
-  exports: [JwtAuthGuard],
+  exports: [JwtAuthGuard, PostService],
 })
 export class PostModule {}
