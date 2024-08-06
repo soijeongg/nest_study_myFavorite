@@ -7,8 +7,9 @@ export interface IuserService {
   createUserService(createDto: createUserDTO): Promise<User>;
   loginUserService(LoginDto: loginDTO): Promise<string>;
   findUserByID(userId: number): Promise<User | null>;
-  updateUserService(updateDTO: updateUserDTO): Promise<User>;
+  updateUserService(updateDTO: updateUserDTO, user: User): Promise<User>;
   deleteUserService(userId: number): Promise<boolean>;
   searchUserService(username: string): Promise<User[] | User | null>;
   getOtherUserService(username: string): Promise<User>;
+  logout(token: string): Promise<void>;
 }

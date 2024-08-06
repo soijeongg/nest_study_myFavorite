@@ -52,8 +52,10 @@ export class UserController implements IuserController {
   async updateUserController(
     @Body() updateDTO: updateUserDTO,
     @Res() res: Response,
+    @Req() req: Request,
   ): Promise<void> {
-    await this.userService.updateUserService(updateDTO);
+    const user = req.user as User;
+    await this.userService.updateUserService(updateDTO, user);
     res.status(HttpStatus.OK).json({ message: 'User updated successfully' });
   }
 
@@ -88,5 +90,12 @@ export class UserController implements IuserController {
     @Param('username') username: string,
   ): Promise<User> {
     return await this.userService.getOtherUserService(username);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Get('logout')
+  async logoutController(req: Request): Promise<void> {
+    const token = await req.headers.authorization.split('')[1];
+    await this.userService.logout(token);
   }
 }

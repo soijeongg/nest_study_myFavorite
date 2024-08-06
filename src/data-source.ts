@@ -6,6 +6,7 @@ import { Like } from './like/entities/like.entity';
 import { Favorite } from './favorite/entities/favorite.entity';
 import { Friend } from './friend/entities/friend.entity';
 import { Comment } from './comment/entities/comment.entity';
+import { TokenBlacklist } from './user/entities/tokenBlacklist';
 
 ConfigModule.forRoot(); // .env 파일에서 환경 변수를 로드
 
@@ -23,7 +24,7 @@ export const dataSourceOptions: TypeOrmModuleAsyncOptions = {
     password: configService.get<string>('TYPEORM_PASSWORD'),
     database: configService.get<string>('TYPEORM_DATABASE'),
     synchronize: configService.get<boolean>('TYPEORM_SYNCHRONIZE'),
-    entities: [User, Posts, Like, Favorite, Friend, Comment],
+    entities: [User, Posts, Like, Favorite, Friend, Comment, TokenBlacklist],
   }),
   inject: [ConfigService], //환경변수에서 설정값 가져옴
 };

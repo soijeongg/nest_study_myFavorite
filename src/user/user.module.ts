@@ -10,6 +10,7 @@ import { JwtStrategy } from '../config/jwt.strategy';
 import { JwtAuthGuard } from 'src/Guard/jwt.guard';
 import { adminGuard } from 'src/Guard/adminGuard';
 import { JwtConfigService } from 'src/config/jwt.config';
+import { TokenBlacklist } from './entities/tokenBlacklist';
 @Module({
   imports: [
     TypeOrmModule.forFeature([User]), // 1. User 엔티티에 대한 TypeORM 레포지토리를 모듈에 등록
@@ -21,6 +22,7 @@ import { JwtConfigService } from 'src/config/jwt.config';
       inject: [ConfigService],
     }),
     ConfigModule,
+    TypeOrmModule.forFeature([TokenBlacklist]),
   ], //모듈에서 사용할 레포지토리 등록
   controllers: [UserController],
   providers: [UserService, JwtStrategy, JwtAuthGuard, adminGuard],
