@@ -1,7 +1,7 @@
-import { Comment } from 'src/comment/entities/comment.entity';
-import { Favorite } from 'src/favorite/entities/favorite.entity';
-import { Like } from 'src/like/entities/like.entity';
-import { User } from 'src/user/entities/user.entities';
+import { Comment } from '../../comment/entities/comment.entity';
+import { Favorite } from '../../favorite/entities/favorite.entity';
+import { Like } from '../../like/entities/like.entity';
+import { User } from '../../user/entities/user.entities';
 import {
   Column,
   PrimaryGeneratedColumn,

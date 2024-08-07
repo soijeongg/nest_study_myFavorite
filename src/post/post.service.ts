@@ -3,10 +3,10 @@ import { CreatePostDto } from './dto/create-post.dto';
 import { UpdatePostDto } from './dto/update-post.dto';
 import { IpostService } from './interface/IpostService';
 import { Posts } from './entities/post.entities';
-import { Favorite } from 'src/favorite/entities/favorite.entity';
+import { Favorite } from '../favorite/entities/favorite.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Like, Repository, DeleteResult } from 'typeorm';
-import { User } from 'src/user/entities/user.entities';
+import { User } from '../user/entities/user.entities';
 @Injectable()
 export class PostService implements IpostService {
   constructor(

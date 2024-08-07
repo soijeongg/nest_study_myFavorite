@@ -3,8 +3,8 @@ import { FriendService } from './friend.service';
 import { FriendController } from './friend.controller';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { Friend } from './entities/friend.entity';
-import { UserModule } from 'src/user/user.module';
-import { JwtAuthGuard } from 'src/Guard/jwt.guard';
+import { UserModule } from '../user/user.module';
+import { JwtAuthGuard } from '../Guard/jwt.guard';
 
 @Module({
   imports: [TypeOrmModule.forFeature([Friend]), UserModule],

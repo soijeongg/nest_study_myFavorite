@@ -4,10 +4,10 @@ import { IlikeService } from './interface/ILikeService';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Like } from './entities/like.entity';
 import { DeleteResult, In, Repository } from 'typeorm';
-import { PostService } from 'src/post/post.service';
-import { User } from 'src/user/entities/user.entities';
-import { Posts } from 'src/post/entities/post.entities';
-import { UserService } from 'src/user/user.service';
+import { PostService } from '../post/post.service';
+import { User } from '../user/entities/user.entities';
+import { Posts } from '../post/entities/post.entities';
+import { UserService } from '../user/user.service';
 @Injectable()
 export class LikeService implements IlikeService {
   constructor(

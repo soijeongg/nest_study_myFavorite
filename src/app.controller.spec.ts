@@ -1,6 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
+import { Ip } from './decorators/ip.Decorators';
 
 describe('AppController', () => {
   let appController: AppController;
@@ -16,7 +17,8 @@ describe('AppController', () => {
 
   describe('root', () => {
     it('should return "Hello World!"', () => {
-      expect(appController.getHello()).toBe('Hello World!');
+      const fakeIp = '127.0.0.1';
+      expect(appController.getHello(fakeIp)).toBe('nest 기초');
     });
   });
 });

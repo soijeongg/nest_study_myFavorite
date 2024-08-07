@@ -5,8 +5,8 @@ import { IfriendService } from './interface/IfriendService';
 import { Friend } from './entities/friend.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { DeleteResult, Repository } from 'typeorm';
-import { UserService } from 'src/user/user.service';
-import { User } from 'src/user/entities/user.entities';
+import { UserService } from '../user/user.service';
+import { User } from '../user/entities/user.entities';
 
 @Injectable()
 export class FriendService implements IfriendService {

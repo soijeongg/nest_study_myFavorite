@@ -20,7 +20,7 @@ import { CreatePostDto } from './dto/create-post.dto';
 import { UpdatePostDto } from './dto/update-post.dto';
 import { JwtAuthGuard } from 'src/Guard/jwt.guard';
 import { FileInterceptor } from '@nestjs/platform-express';
-import { User } from 'src/user/entities/user.entities';
+import { User } from '../user/entities/user.entities';
 import { Posts } from './entities/post.entities';
 import { IpostController } from './interface/IpostController';
 

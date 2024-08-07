@@ -25,6 +25,7 @@ export class UserService implements IuserService {
     if (findEmail && (await argon2.verify(findEmail.password, password))) {
       return findEmail;
     }
+    return null;
   }
   async getAllService() {
     return await this.userRepository.find();

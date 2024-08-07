@@ -22,7 +22,7 @@ import { UpdateFavoriteDto } from './dto/update-favorite.dto';
 import { IfavoriteController } from './interface/IfavoriteController';
 import { multerOptions } from 'src/multer-opotions';
 import { Favorite } from './entities/favorite.entity';
-import { User } from 'src/user/entities/user.entities';
+import { User } from '../user/entities/user.entities';
 import { JwtAuthGuard } from 'src/Guard/jwt.guard';
 
 @Controller('favorite')

@@ -5,7 +5,7 @@ import {
   ManyToOne,
   Column,
 } from 'typeorm';
-import { User } from 'src/user/entities/user.entities';
+import { User } from '../../user/entities/user.entities';
 @Entity()
 export class Friend {
   @PrimaryGeneratedColumn()

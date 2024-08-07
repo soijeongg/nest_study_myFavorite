@@ -4,7 +4,7 @@ import { ILikeController } from './interface/ILikeController';
 import { Like } from './entities/like.entity';
 import { JwtAuthGuard } from 'src/Guard/jwt.guard';
 import { Request, Response } from 'express';
-import { User } from 'src/user/entities/user.entities';
+import { User } from '../user/entities/user.entities';
 
 @Controller('like')
 export class LikeController implements ILikeController {

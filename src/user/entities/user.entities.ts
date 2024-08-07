@@ -1,8 +1,8 @@
-import { Comment } from 'src/comment/entities/comment.entity';
-import { Favorite } from 'src/favorite/entities/favorite.entity';
-import { Friend } from 'src/friend/entities/friend.entity';
-import { Like } from 'src/like/entities/like.entity';
-import { Posts } from 'src/post/entities/post.entities';
+import { Comment } from '../../comment/entities/comment.entity';
+import { Favorite } from '../../favorite/entities/favorite.entity';
+import { Friend } from '../../friend/entities/friend.entity';
+import { Like } from '../../like/entities/like.entity';
+import { Posts } from '../../post/entities/post.entities';
 import {
   Column,
   Entity,
@@ -32,7 +32,7 @@ export class User {
     enum: ['admin', 'normal'],
     default: 'normal',
   })
-  staus: 'admin' | 'normal';
+  status: 'admin' | 'normal';
 
   @CreateDateColumn()
   createdAt: Date;
