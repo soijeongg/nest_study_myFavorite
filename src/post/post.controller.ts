@@ -18,7 +18,7 @@ import { multerOptions } from '../multer-opotions';
 import { Response, Request } from 'express';
 import { CreatePostDto } from './dto/create-post.dto';
 import { UpdatePostDto } from './dto/update-post.dto';
-import { JwtAuthGuard } from 'src/Guard/jwt.guard';
+import { JwtAuthGuard } from '../Guard/jwt.guard';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { User } from '../user/entities/user.entities';
 import { Posts } from './entities/post.entities';
@@ -30,7 +30,7 @@ export class PostController implements IpostController {
 
   @UseGuards(JwtAuthGuard)
   @Post()
-  @UseInterceptors(FileInterceptor('file', multerOptions()))
+  @UseInterceptors(FileInterceptor('file'))
   async createPost(
     @UploadedFile() file: Express.Multer.File,
     @Body() createPostDto: CreatePostDto,
@@ -56,7 +56,7 @@ export class PostController implements IpostController {
 
   @UseGuards(JwtAuthGuard)
   @Put(':id')
-  @UseInterceptors(FileInterceptor('file', multerOptions()))
+  @UseInterceptors(FileInterceptor('file'))
   async updatePost(
     @Param('id') id: string,
     @Body() updatePostDto: UpdatePostDto,

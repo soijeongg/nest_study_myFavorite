@@ -16,7 +16,7 @@ import { createUserDTO, loginDTO, updateUserDTO } from './DTO';
 import { User } from './entities/user.entities';
 import { Request, Response } from 'express';
 import { JwtAuthGuard } from '../Guard/jwt.guard';
-import { adminGuard } from 'src/Guard/adminGuard';
+import { adminGuard } from '../Guard/adminGuard';
 import { ApiResponse, ApiTags } from '@nestjs/swagger';
 import { IuserController } from './interface/IuserController';
 

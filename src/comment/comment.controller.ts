@@ -3,7 +3,7 @@ import { CommentService } from './comment.service';
 import { CreateCommentDto } from './dto/create-comment.dto';
 import { UpdateCommentDto } from './dto/update-comment.dto';
 import { JwtAuthGuard } from '../Guard/jwt.guard';
-import { User } from 'src/user/entities/user.entities';
+import { User } from '../user/entities/user.entities';
 import { Response, Request } from 'express';
 import { ICommentController } from './interface/ICommentController';
 import { Comment } from './entities/comment.entity';

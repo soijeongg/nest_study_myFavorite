@@ -2,7 +2,7 @@ import { Controller, Get, Post, Body, Put, Param, Delete, UseGuards, Req, Res, H
 import { LikeService } from './like.service';
 import { ILikeController } from './interface/ILikeController';
 import { Like } from './entities/like.entity';
-import { JwtAuthGuard } from 'src/Guard/jwt.guard';
+import { JwtAuthGuard } from '../Guard/jwt.guard';
 import { Request, Response } from 'express';
 import { User } from '../user/entities/user.entities';
 

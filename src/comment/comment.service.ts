@@ -5,8 +5,8 @@ import { ICommentService } from './interface/ICommentSercvice';
 import { InjectRepository } from '@nestjs/typeorm';
 import { DeleteResult, Repository } from 'typeorm';
 import { Comment } from './entities/comment.entity';
-import { User } from 'src/user/entities/user.entities';
-import { PostService } from 'src/post/post.service';
+import { User } from '../user/entities/user.entities';
+import { PostService } from '../post/post.service';
 
 @Injectable()
 export class CommentService implements ICommentService {

@@ -13,6 +13,7 @@ import {
   Res,
   HttpStatus,
   Query,
+  Logger,
 } from '@nestjs/common';
 import { FavoriteService } from './favorite.service';
 import { Request, Response } from 'express';
@@ -20,13 +21,14 @@ import { FileInterceptor } from '@nestjs/platform-express';
 import { CreateFavoriteDto } from './dto/create-favorite.dto';
 import { UpdateFavoriteDto } from './dto/update-favorite.dto';
 import { IfavoriteController } from './interface/IfavoriteController';
-import { multerOptions } from 'src/multer-opotions';
+import { multerOptions } from '../multer-opotions';
 import { Favorite } from './entities/favorite.entity';
 import { User } from '../user/entities/user.entities';
-import { JwtAuthGuard } from 'src/Guard/jwt.guard';
+import { JwtAuthGuard } from '../Guard/jwt.guard';
 
 @Controller('favorite')
 export class FavoriteController implements IfavoriteController {
+  private readonly logger = new Logger(FavoriteController.name);
   constructor(private readonly favoriteService: FavoriteService) {}
 
   @UseGuards(JwtAuthGuard)
@@ -37,12 +39,18 @@ export class FavoriteController implements IfavoriteController {
     @Body() createFavoriteDto: CreateFavoriteDto,
     @Req() req: Request,
   ): Promise<Favorite> {
-    const user = req.user as User;
-    return this.favoriteService.createFavoriteService(
-      file.filename,
-      createFavoriteDto,
-      user,
-    );
+    try {
+      const user = req.user as User;
+      console.log(file);
+      return this.favoriteService.createFavoriteService(
+        file.filename,
+        createFavoriteDto,
+        user,
+      );
+    } catch (error) {
+      this.logger.error('Error creating favorite', error.stack);
+      throw error;
+    }
   }
 
   @UseGuards(JwtAuthGuard)

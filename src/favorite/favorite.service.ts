@@ -1,4 +1,4 @@
-import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable, Logger } from '@nestjs/common';
 import { CreateFavoriteDto } from './dto/create-favorite.dto';
 import { UpdateFavoriteDto } from './dto/update-favorite.dto';
 import { IfavoriteService } from './interface/IfavoriteService';
@@ -10,6 +10,7 @@ import { UserService } from '../user/user.service';
 
 @Injectable()
 export class FavoriteService implements IfavoriteService {
+  private readonly logger = new Logger(FavoriteService.name);
   constructor(
     @InjectRepository(Favorite)
     private FavoriteRepository: Repository<Favorite>,
@@ -21,15 +22,20 @@ export class FavoriteService implements IfavoriteService {
     createDto: CreateFavoriteDto,
     user: User,
   ): Promise<Favorite> {
-    const { name, description, categories } = createDto;
-    const newFav = await this.FavoriteRepository.create({
-      name,
-      description,
-      categories,
-      imageUrl,
-      user,
-    });
-    return await this.FavoriteRepository.save(newFav);
+    try {
+      const { name, description, categories } = createDto;
+      const newFav = this.FavoriteRepository.create({
+        name,
+        description,
+        categories,
+        imageUrl,
+        user,
+      });
+      return await this.FavoriteRepository.save(newFav);
+    } catch (error) {
+      this.logger.error('Error creating favorite', error.stack);
+      throw error;
+    }
   }
 
   async getAllFavoriteService(user: User): Promise<Favorite[]> {

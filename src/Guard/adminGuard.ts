@@ -4,7 +4,7 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
-import { TokenBlacklist } from 'src/user/entities/tokenBlacklist';
+import { TokenBlacklist } from '../user/entities/tokenBlacklist';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 

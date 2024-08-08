@@ -7,9 +7,9 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { JwtModule } from '@nestjs/jwt';
 import { PassportModule } from '@nestjs/passport';
 import { JwtStrategy } from '../config/jwt.strategy';
-import { JwtAuthGuard } from 'src/Guard/jwt.guard';
-import { adminGuard } from 'src/Guard/adminGuard';
-import { JwtConfigService } from 'src/config/jwt.config';
+import { JwtAuthGuard } from '../Guard/jwt.guard';
+import { adminGuard } from '../Guard/adminGuard';
+import { JwtConfigService } from '../config/jwt.config';
 import { TokenBlacklist } from './entities/tokenBlacklist';
 @Module({
   imports: [
@@ -26,7 +26,7 @@ import { TokenBlacklist } from './entities/tokenBlacklist';
   ], //모듈에서 사용할 레포지토리 등록
   controllers: [UserController],
   providers: [UserService, JwtStrategy, JwtAuthGuard, adminGuard],
-  exports: [JwtModule, PassportModule, UserService, JwtAuthGuard, adminGuard],
+  exports: [JwtModule, PassportModule, UserService, JwtAuthGuard, adminGuard, TypeOrmModule, UserService],
 })
 export class UserModule {}
 
