@@ -8,7 +8,8 @@ import {
   CreateDateColumn,
 } from 'typeorm';
 import { Posts } from '../../post/entities/post.entities';
-import { User } from '../../user/entities/user.entities';
+import { userFavorite } from 'src/user/entities/userFavorite.entities';
+import { SubSubCategory } from 'src/sub-sub-categories/entities/sub-sub-category.entity';
 
 @Entity()
 export class Favorite {
@@ -33,8 +34,11 @@ export class Favorite {
   @UpdateDateColumn()
   updatedAt: Date;
 
-  @ManyToOne(() => User, (user) => user.favorites)
-  user: User;
+  @OneToMany(() => userFavorite, (userFavorite) => userFavorite.Favorite)
+  userFavorite: userFavorite[];
+
+  @ManyToOne(() => SubSubCategory, (SubSubCategory) => SubSubCategory.favorite)
+  subSubCategory: SubSubCategory;
 
   @OneToMany(() => Posts, (post) => post.favorite)
   posts: Posts[];

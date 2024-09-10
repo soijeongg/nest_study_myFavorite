@@ -1,8 +1,9 @@
 import { Comment } from '../../comment/entities/comment.entity';
-import { Favorite } from '../../favorite/entities/favorite.entity';
-import { Friend } from '../../friend/entities/friend.entity';
+import { userFavorite } from './userFavorite.entities';
+import { userFriends } from 'src/friend/entities/userFriends.entity';
 import { Like } from '../../like/entities/like.entity';
 import { Posts } from '../../post/entities/post.entities';
+import { FriendRequest } from 'src/friend/entities/friendRequests.entity';
 import {
   Column,
   Entity,
@@ -13,6 +14,10 @@ import {
   OneToMany,
 } from 'typeorm';
 
+export enum userType {
+  ADMIN = 'admin',
+  MEMBER = 'member',
+}
 @Entity()
 export class User {
   @PrimaryGeneratedColumn({})
@@ -29,10 +34,10 @@ export class User {
 
   @Column({
     type: 'enum',
-    enum: ['admin', 'normal'],
-    default: 'normal',
+    enum: userType,
+    default: userType.MEMBER,
   })
-  status: 'admin' | 'normal';
+  status: userType;
 
   @CreateDateColumn()
   createdAt: Date;
@@ -46,8 +51,8 @@ export class User {
   @OneToMany(() => Posts, (post) => post.user)
   posts: Posts[];
 
-  @OneToMany(() => Favorite, (favorite) => favorite.user)
-  favorites: Favorite[];
+  @OneToMany(() => userFavorite, (userFavorite) => userFavorite.user)
+  userFavorite: userFavorite[];
 
   @OneToMany(() => Comment, (comment) => comment.user)
   comments: Comment[];
@@ -55,9 +60,10 @@ export class User {
   @OneToMany(() => Like, (like) => like.user)
   likes: Like[];
 
-  @OneToMany(() => Friend, (friend) => friend.requester)
-  friendsRequested: Friend[];
+  //한명의 유저는 여러 유저에게 친구 신청을 할 수 있다
+  @OneToMany(() => FriendRequest, (FriendRequest) => FriendRequest.requester)
+  sentFriendRequests: FriendRequest[];
 
-  @OneToMany(() => Friend, (friend) => friend.recipient)
-  friendsReceived: Friend[];
+  @OneToMany(() => userFriends, (userFriends) => userFriends.friend)
+  friends: userFriends[];
 }

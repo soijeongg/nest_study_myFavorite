@@ -10,6 +10,9 @@ import { CommentModule } from './comment/comment.module';
 import { FriendModule } from './friend/friend.module';
 import { LikeModule } from './like/like.module';
 import { FavoriteModule } from './favorite/favorite.module';
+import { CategoriesModule } from './categories/categories.module';
+import { SubCategoriesModule } from './sub-categories/sub-categories.module';
+import { SubSubCategoriesModule } from './sub-sub-categories/sub-sub-categories.module';
 
 @Module({
   imports: [
@@ -23,6 +26,9 @@ import { FavoriteModule } from './favorite/favorite.module';
     FavoriteModule,
     LikeModule,
     FriendModule,
+    CategoriesModule,
+    SubCategoriesModule,
+    SubSubCategoriesModule,
   ],
   controllers: [AppController],
   providers: [AppService],

@@ -16,7 +16,7 @@ import { CreateFriendDto } from './dto/create-friend.dto';
 import { UpdateFriendDto } from './dto/update-friend.dto';
 import { IfriendController } from './interface/IfriendController';
 import { Request, Response } from 'express';
-import { Friend } from './entities/friend.entity';
+import { Friend } from './entities/friendRequests.entity';
 import { JwtAuthGuard } from '../Guard/jwt.guard';
 import { User } from '../user/entities/user.entities';
 

@@ -15,7 +15,7 @@ import {
 @Entity()
 export class Posts {
   @PrimaryGeneratedColumn()
-  PostsId: number;
+  postId: number;
 
   @Column()
   title: string;
@@ -39,8 +39,8 @@ export class Posts {
   favorite: Favorite;
 
   @OneToMany(() => Like, (like) => like.post)
-  likes: Like;
+  likes: Like[];
 
   @OneToMany(() => Comment, (Comment) => Comment.post)
-  comments: Comment;
+  comments: Comment[];
 }

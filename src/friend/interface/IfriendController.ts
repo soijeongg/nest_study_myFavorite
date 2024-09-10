@@ -1,6 +1,6 @@
 import { CreateFriendDto } from "../dto/create-friend.dto";
 import { Request, Response } from "express";
-import { Friend } from "../entities/friend.entity";
+import { Friend } from "../entities/friendRequests.entity";
 import { UpdateFriendDto } from "../dto/update-friend.dto";
 export interface IfriendController {
   createFriendController(createDto: CreateFriendDto, req:Request): Promise<Friend>;

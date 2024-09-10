@@ -14,7 +14,6 @@ import {
   HttpStatus,
 } from '@nestjs/common';
 import { PostService } from './post.service';
-import { multerOptions } from '../multer-opotions';
 import { Response, Request } from 'express';
 import { CreatePostDto } from './dto/create-post.dto';
 import { UpdatePostDto } from './dto/update-post.dto';

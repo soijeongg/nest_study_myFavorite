@@ -5,6 +5,12 @@ import { Posts } from './post/entities/post.entities';
 import { Like } from './like/entities/like.entity';
 import { Favorite } from './favorite/entities/favorite.entity';
 import { Friend } from './friend/entities/friend.entity';
+import { Category } from './categories/entities/category.entity';
+import { SubCategory } from './sub-categories/entities/sub-category.entity';
+import { SubSubCategory } from './sub-sub-categories/entities/sub-sub-category.entity';
+import { userFavorite } from './user/entities/userFavorite.entities';
+import { FriendRequest } from './friend/entities/friendRequests.entity';
+import { userFriends } from './friend/entities/userFriends.entity';
 import { Comment } from './comment/entities/comment.entity';
 import { TokenBlacklist } from './user/entities/tokenBlacklist';
 
@@ -24,7 +30,7 @@ export const dataSourceOptions: TypeOrmModuleAsyncOptions = {
     password: configService.get<string>('TYPEORM_PASSWORD'),
     database: configService.get<string>('TYPEORM_DATABASE'),
     synchronize: configService.get<boolean>('TYPEORM_SYNCHRONIZE'),
-    entities: [User, Posts, Like, Favorite, Friend, Comment, TokenBlacklist],
+    entities: [User, Posts, Like, Favorite, Friend, Comment, TokenBlacklist, Category, SubCategory, SubSubCategory, userFavorite, userFriends, FriendRequest],
   }),
   inject: [ConfigService], //환경변수에서 설정값 가져옴
 };
