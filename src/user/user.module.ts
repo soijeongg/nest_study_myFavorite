@@ -11,6 +11,9 @@ import { JwtAuthGuard } from '../Guard/jwt.guard';
 import { adminGuard } from '../Guard/adminGuard';
 import { JwtConfigService } from '../config/jwt.config';
 import { TokenBlacklist } from './entities/tokenBlacklist';
+import { MulterModule } from '@nestjs/platform-express';
+import { diskStorage } from 'multer';
+import { extname } from 'path';
 @Module({
   imports: [
     TypeOrmModule.forFeature([User, TokenBlacklist]), // 1. User 엔티티에 대한 TypeORM 레포지토리를 모듈에 등록
@@ -20,6 +23,17 @@ import { TokenBlacklist } from './entities/tokenBlacklist';
       imports: [ConfigModule], //환경변수 사용
       useClass: JwtConfigService, // JwtConfigService를 사용하여 설정 제공
       inject: [ConfigService],
+    }),
+    MulterModule.register({
+      storage: diskStorage({
+        destination: './profile', // 파일 저장 경로
+        filename: (req, file, callback) => {
+          // 원래 파일명과 확장자를 유지한 채 파일 저장
+          const fileExtName = extname(file.originalname); // 확장자 추출
+          const fileName = `${Date.now()}-${Math.round(Math.random() * 1e9)}${fileExtName}`; // 유니크한 파일 이름 생성
+          callback(null, fileName); // 파일 이름 설정
+        },
+      }),
     }),
     ConfigModule,
     TypeOrmModule.forFeature([TokenBlacklist]),
