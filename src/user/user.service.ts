@@ -9,14 +9,14 @@ import { IuserService } from './interface/IuserService';
 import { TokenBlacklist } from './entities/tokenBlacklist';
 //서비스는 모든 비즈니스 로직을 처리한다  -> 레포지토리는 오직 db접근만
 @Injectable()
-export class UserService implements IuserService {
+export class UserService {
   constructor(
     @InjectRepository(User) private userRepository: Repository<User>,
     private readonly jwtService: JwtService, //JwtService는 AuthModule에서 설정한 JwtModule을 통해 제공된 설정을 사용하여 작동
     @InjectRepository(TokenBlacklist)
     private tokenBlacklistRepository: Repository<TokenBlacklist>,
   ) {}
-
+  //TODO:로그인을 위한 이메일 검사 및 비밀번호 확인
   async validateUser(email: string, password: string): Promise<any> {
     const findEmail = await this.userRepository.findOne({
       where: { email, deletedAt: null },
@@ -31,9 +31,33 @@ export class UserService implements IuserService {
     return await this.userRepository.find();
   }
 
-  async createUserService(createDto: createUserDTO): Promise<User> {
-    const { password } = createDto;
+  //TODO: 회원가입, 이메일, 비밀번호, 닉네임, 상태를 받아 저장한다
+  async createUserService(createDto: createUserDTO, profilePic: string): Promise<User> {
+    const { password, email, username, status } = createDto;
     const hashPassword = await argon2.hash(password);
+    //이메일 닉네임 중복체크
+    const findEmail = await this.userRepository.findOne({
+      where: { email, deletedAt: null },
+    });
+    if (findEmail) {
+      throw new HttpException(
+        '이메일이 중복되었습니다',
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+    //이메일은 없지만 닉네임이 중복된 경우
+    const findName = await this.userRepository.findOne({
+      where: {
+        username,
+        deletedAt: null,
+      },
+    });
+    if (findName) {
+      throw new HttpException(
+        '닉네임이 중복되었습니다',
+        HttpStatus.BAD_REQUEST,
+      );
+    }
     const newUser = await this.userRepository.create({
       ...createDto,
       password: hashPassword,
@@ -41,16 +65,23 @@ export class UserService implements IuserService {
     return this.userRepository.save(newUser);
   }
 
+  //TODO: 로그인
   async loginUserService(LoginDto: loginDTO) {
     const { email, password } = LoginDto;
     const user = await this.validateUser(email, password);
     if (!user) {
       throw new HttpException('로그인에 실패했습니다', HttpStatus.BAD_REQUEST);
     }
-    const payload = { id: user.userId, status: user.status };
-    const accessToken = await this.jwtService.signAsync(payload);
-    return accessToken;
+    const payload = { sub: user.userId, status: user.status };
+    const accessToken = this.jwtService.sign(payload, { expiresIn: '1h' });
+    const refreshToken = this.jwtService.sign(payload, { expiresIn: '7d' });
+    return {
+      access_token: accessToken,
+      refresh_token: refreshToken,
+    };
   }
+
+  //TODO: 유저 아이디를 사용해 유저 반환, 다른 곳에서 사용
   async findUserByID(userId: number): Promise<User | null> {
     const user = await this.userRepository.findOne({ where: { userId } });
     if (!user) {
@@ -61,34 +92,46 @@ export class UserService implements IuserService {
     }
     return user;
   }
-  async updateUserService(updateDTO: updateUserDTO, user: User): Promise<User> {
-    const { email, username, password } = updateDTO;
-    const find = await this.userRepository.findOne({ where: { email } });
+
+  //TODO: 유저 업데이트
+  async updateUserService(updateDTO: updateUserDTO, userId: number, profilePic: string) {
+    const { username, password, status } = updateDTO;
+    const find = await this.userRepository.findOne({ where: { userId } });
     if (!find) {
       throw new HttpException('해당하는 유저가 없습니다', HttpStatus.NOT_FOUND);
     }
-    if (user.email != email) {
-      throw new HttpException(
-        '유저 자신만 변경 가능합니다',
-        HttpStatus.BAD_REQUEST,
-      );
-    }
+
     if (username) {
-      const check = await this.getOtherUserService(username);
+      //유저 네임이 존재하는지 확인
+      const check = await this.userRepository.findOne({
+        where: { username, deletedAt: null },
+      });
       if (check) {
         throw new HttpException(
           '중복된 이름이 존재합니다',
           HttpStatus.BAD_REQUEST,
         );
       }
-      user.username = username;
+      find.username = username;
     }
     if (password) {
-      user.password = await argon2.hash(password);
+      find.password = await argon2.hash(password);
     }
-    user.updatedAt = new Date();
-    return await this.userRepository.save(user);
+    if (status) {
+      find.status = status;
+    }
+    if (profilePic) {
+      find.profilePic = profilePic;
+    }
+    find.updatedAt = new Date();
+    const newUser = await this.userRepository.save(find);
+    return {
+      email: newUser.email,
+      username: newUser.username,
+      status: newUser.status,
+    };
   }
+  //TODO: 회원 삭제 소프트 삭제
   async deleteUserService(userId: number): Promise<boolean> {
     const user = await this.userRepository.findOne({ where: { userId } });
     if (!user) {
@@ -103,13 +146,71 @@ export class UserService implements IuserService {
       where: [{ username: Like(`%${username}%`) }],
     });
   }
-
-  async getOtherUserService(username: string): Promise<User> {
-    return await this.userRepository.findOne({
+  //TODO: 남의 꺼 가져오기
+  //남의 유저 아이디가 들어오면 유저 아이디를 검사하고 해당 유저의 닉네임, 포스트아(익명이 아닐경우), 댓글(익명이 아닐경우)
+  async getOtherUserService(userId: number) {
+    const user = await this.userRepository.findOne({
       where: {
-        username: username,
+        userId: userId,
       },
+      relations: ['userFavorite', 'posts', 'comments'],
     });
+    return {
+      usernaame: user.username,
+      posts: user.posts
+        .filter((post) => !post.anonymous)
+        .map((post) => ({
+          postId: post.postId,
+          title: post.title,
+          description: post.description,
+          imageUrl: post.imageUrl,
+          createAt: post.createAt,
+        })),
+      comments: user.comments
+        .filter((Comment) => !Comment.anonymous)
+        .map((Comment) => ({
+          commentId: Comment.commentId,
+          comtent: Comment.content,
+          createAt: Comment.createdAt,
+        })),
+      userFavorite: user.userFavorites.map((userFavorite) => ({
+        userFavoriteId: userFavorite.userFavoriteId,
+        Favorite: userFavorite.Favorites.map((favorite) => ({
+          favoriteId: favorite.favoriteId,
+          favoriteName: favorite.name,
+        })),
+      })),
+    };
+  }
+
+  //내꺼 닉네임,포스트, 댓글, 가져오기 나는 익명이여도 전부 가져오기
+  async findMe(userId: number) {
+    const user = await this.userRepository.findOne({
+      where: { userId },
+      relations: ['posts', 'comments', 'userFavorites'],
+    });
+    return {
+      usernaame: user.username,
+      posts: user.posts.map((post) => ({
+        postId: post.postId,
+        title: post.title,
+        description: post.description,
+        imageUrl: post.imageUrl,
+        createAt: post.createAt,
+      })),
+      comments: user.comments.map((comment) => ({
+        commentId: comment.commentId,
+        content: comment.content,
+        createAt: comment.createdAt,
+      })),
+      userFavorite: user.userFavorites.map((userFavorite) => ({
+        userFavoriteId: userFavorite.userFavoriteId,
+        Favorite: userFavorite.Favorites.map((favorite) => ({
+          favoriteId: favorite.favoriteId,
+          favoriteName: favorite.name,
+        })),
+      })),
+    };
   }
 
   async logout(token: string): Promise<void> {
@@ -121,5 +222,22 @@ export class UserService implements IuserService {
     tokenBlacklist.expiresAt = expiresAt;
 
     await this.tokenBlacklistRepository.save(tokenBlacklist);
+  }
+
+  async refreshService(refreshToken: string) {
+    const payload = this.jwtService.verify(refreshToken);
+    if (!payload || !payload.sub) {
+      throw new HttpException(
+        '유효하지 않은 토큰입니다',
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+    const newAccessToken = this.jwtService.sign(
+      { username: payload.username, sub: payload.sub },
+      { expiresIn: '1h' },
+    );
+    return {
+      access_token: newAccessToken,
+    };
   }
 }

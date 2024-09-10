@@ -52,13 +52,16 @@ export class User {
   posts: Posts[];
 
   @OneToMany(() => userFavorite, (userFavorite) => userFavorite.user)
-  userFavorite: userFavorite[];
+  userFavorites: userFavorite[];
 
   @OneToMany(() => Comment, (comment) => comment.user)
   comments: Comment[];
 
   @OneToMany(() => Like, (like) => like.user)
   likes: Like[];
+
+  @Column()
+  profilePic: string;
 
   //한명의 유저는 여러 유저에게 친구 신청을 할 수 있다
   @OneToMany(() => FriendRequest, (FriendRequest) => FriendRequest.requester)

@@ -7,11 +7,11 @@ export class userFavorite {
   @PrimaryGeneratedColumn()
   userFavoriteId: number;
 
-  @ManyToOne(() => User, (user) => user.userFavorite)
+  @ManyToOne(() => User, (user) => user.userFavorites)
   user: User;
 
   @ManyToOne(() => Favorite, (Favorite) => Favorite.userFavorite)
-  Favorite: Favorite[];
+  Favorites: Favorite[];
 
   @DeleteDateColumn()
   deleteAt: Date;

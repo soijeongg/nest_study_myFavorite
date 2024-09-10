@@ -17,6 +17,9 @@ export class Comment {
   @Column()
   content: string;
 
+  @Column()
+  anonymous: boolean;
+
   @CreateDateColumn()
   createdAt: Date;
 

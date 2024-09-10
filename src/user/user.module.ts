@@ -13,7 +13,7 @@ import { JwtConfigService } from '../config/jwt.config';
 import { TokenBlacklist } from './entities/tokenBlacklist';
 @Module({
   imports: [
-    TypeOrmModule.forFeature([User]), // 1. User 엔티티에 대한 TypeORM 레포지토리를 모듈에 등록
+    TypeOrmModule.forFeature([User, TokenBlacklist]), // 1. User 엔티티에 대한 TypeORM 레포지토리를 모듈에 등록
     PassportModule.register({ defaultStrategy: 'jwt' }),
     JwtModule.registerAsync({
       // 2. 비동기 방식으로 JwtModule을 등록

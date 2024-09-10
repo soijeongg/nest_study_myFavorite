@@ -1,17 +1,11 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
-import { CustomValidationPipe } from './pipe/CustomValidationPipe';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { httpExceptionFilter } from './exception/http.exception';
-import { NestExpressApplication } from '@nestjs/platform-express';
-import { join } from 'path';
+import * as cookieParser from 'cookie-parser';
 
 async function bootstrap() {
-  const app = await NestFactory.create<NestExpressApplication>(AppModule);
-  app.useStaticAssets(join(__dirname, '..', 'uploads'), {
-    prefix: '/uploads',
-  });
-  app.useGlobalPipes(new CustomValidationPipe());
+  const app = await NestFactory.create(AppModule);
   app.useGlobalFilters(new httpExceptionFilter());
   const config = new DocumentBuilder()
     .setTitle('simple posts')
@@ -19,6 +13,7 @@ async function bootstrap() {
     .setVersion('1.0')
     .build();
   const document = SwaggerModule.createDocument(app, config);
+  app.use(cookieParser());
   SwaggerModule.setup('docs', app, document);
   await app.listen(3000);
 }

@@ -10,6 +10,9 @@ import {
   Res,
   Req,
   Param,
+  UseInterceptors,
+  UploadedFile,
+  HttpException,
 } from '@nestjs/common';
 import { UserService } from './user.service';
 import { createUserDTO, loginDTO, updateUserDTO } from './DTO';
@@ -19,11 +22,13 @@ import { JwtAuthGuard } from '../Guard/jwt.guard';
 import { adminGuard } from '../Guard/adminGuard';
 import { ApiResponse, ApiTags } from '@nestjs/swagger';
 import { IuserController } from './interface/IuserController';
+import { FileInterceptor } from '@nestjs/platform-express';
+import multer from 'multer';
 
 @ApiTags('user')
 @ApiResponse({ status: 200, description: '성공' })
 @Controller('user')
-export class UserController implements IuserController {
+export class UserController {
   constructor(private readonly userService: UserService) {}
 
   @Get()
@@ -33,8 +38,12 @@ export class UserController implements IuserController {
   }
 
   @Post()
-  async createUserController(@Body() createDto: createUserDTO): Promise<User> {
-    return this.userService.createUserService(createDto);
+  @UseInterceptors(FileInterceptor('profilePic'))
+  async createUserController(
+    @Body() createDto: createUserDTO,
+    @UploadedFile() profilePic: Express.Multer.File,
+  ): Promise<User> {
+    return this.userService.createUserService(createDto, profilePic.filename);
   }
 
   @Post('/login')
@@ -42,21 +51,30 @@ export class UserController implements IuserController {
     @Body() LoginDTO: loginDTO,
     @Res() res: Response,
   ): Promise<void> {
-    const accessToken = await this.userService.loginUserService(LoginDTO);
-    res.setHeader('Authorization', `Bearer ${accessToken}`);
-    res.status(HttpStatus.OK).json({ message: '로그인 성공', accessToken });
+    const { access_token, refresh_token } =
+      await this.userService.loginUserService(LoginDTO);
+    res.setHeader('Authorization', `Bearer ${access_token}`);
+    res.cookie('refresh_token', refresh_token, {
+      maxAge: 7 * 24 * 60 * 60 * 1000,
+    });
+    res.status(HttpStatus.OK).json({ message: '로그인 성공', access_token });
   }
 
   @Put()
   @UseGuards(JwtAuthGuard)
+  @UseInterceptors(FileInterceptor('profilePic'))
   async updateUserController(
     @Body() updateDTO: updateUserDTO,
     @Res() res: Response,
     @Req() req: Request,
-  ): Promise<void> {
+    @UploadedFile() profilePic?: Express.Multer.File,
+  ) {
     const user = req.user as User;
-    await this.userService.updateUserService(updateDTO, user);
-    res.status(HttpStatus.OK).json({ message: 'User updated successfully' });
+    const imageUrl = profilePic ? profilePic.filename : null;
+    await this.userService.updateUserService(updateDTO, +user.userId, imageUrl);
+    return res
+      .status(HttpStatus.OK)
+      .json({ message: '성공적으로 유저를 업데이트 했습니다' });
   }
 
   @Delete()
@@ -66,36 +84,35 @@ export class UserController implements IuserController {
     @Res() res: Response,
   ): Promise<void> {
     const user = req.user as User;
-    await this.userService.deleteUserService(user.userId);
+    await this.userService.deleteUserService(+user.userId);
     res.status(HttpStatus.OK).json({ message: '삭제가 완료되었습니다' });
   }
 
-  @Get()
+  @Get(':userId')
+  async getOtherUserController(@Param('userId') userId: string) {
+    return await this.userService.getOtherUserService(+userId);
+  }
+
+  @Get('/me')
   @UseGuards(JwtAuthGuard)
-  async getuserIdController(
-    @Req() req: Request,
-    @Res() res: Response,
-  ): Promise<User> {
+  async getMineController(@Req() req: Request) {
     const user = req.user as User;
-    return this.userService.findUserByID(user.userId);
+    return await this.userService.findMe(+user.userId);
   }
 
-  @Get('search')
-  async searchUserController(username: string): Promise<User[] | User | null> {
-    return this.userService.searchUserService(username);
-  }
-
-  @Get(':username')
-  async getOtherUserController(
-    @Param('username') username: string,
-  ): Promise<User> {
-    return await this.userService.getOtherUserService(username);
-  }
-
+  @Get('/logout')
   @UseGuards(JwtAuthGuard)
-  @Get('logout')
-  async logoutController(req: Request): Promise<void> {
+  async logoutController(@Req() req: Request, @Res() res: Response) {
     const token = await req.headers.authorization.split('')[1];
+    const refreshToken = req.cookies['refresh_token'];
+    if (!token || !refreshToken) {
+      throw new HttpException(
+        '토큰이 유효하지 않습니다',
+        HttpStatus.BAD_REQUEST,
+      );
+    }
     await this.userService.logout(token);
+    res.clearCookie('refreshToken');
+    res.status(HttpStatus.OK).json({ message: '로그아웃되었습니다.' });
   }
 }

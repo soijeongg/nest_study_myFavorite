@@ -25,16 +25,13 @@ export class Favorite {
   @Column()
   description: string;
 
-  @Column()
-  imageUrl: string;
-
   @CreateDateColumn()
   createdAt: Date;
 
   @UpdateDateColumn()
   updatedAt: Date;
 
-  @OneToMany(() => userFavorite, (userFavorite) => userFavorite.Favorite)
+  @OneToMany(() => userFavorite, (userFavorite) => userFavorite.Favorites)
   userFavorite: userFavorite[];
 
   @ManyToOne(() => SubSubCategory, (SubSubCategory) => SubSubCategory.favorite)

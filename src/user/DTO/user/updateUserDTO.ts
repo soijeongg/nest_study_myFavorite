@@ -5,6 +5,7 @@ import {
   IsOptional,
   Matches,
 } from 'class-validator';
+import { userType } from './createUserDto';
 
 export class updateUserDTO {
   email: string;
@@ -26,4 +27,8 @@ export class updateUserDTO {
     message: '닉네임은 최대10자 최소2자 이상입니다',
   })
   username?: string;
+
+  status?: userType;
+
+  profilePic?: string;
 }

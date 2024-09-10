@@ -32,6 +32,9 @@ export class Posts {
   @UpdateDateColumn()
   updateAt: Date | null;
 
+  @Column()
+  anonymous: boolean;
+
   @ManyToOne(() => User, (user) => user.posts)
   user: User;
 

@@ -7,6 +7,10 @@ import {
   Matches,
 } from 'class-validator';
 
+export enum userType {
+  ADMIN = 'admin',
+  MEMBER = 'member',
+}
 export class createUserDTO {
   @IsEmail()
   @ApiProperty({ required: true, example: '12345@naver.com' })
@@ -29,4 +33,8 @@ export class createUserDTO {
   })
   @ApiProperty({ required: true, example: 'username' })
   username: string;
+
+  status: userType;
+
+  profilePic: string;
 }
