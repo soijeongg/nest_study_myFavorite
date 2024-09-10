@@ -1,34 +1,45 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Req, Put } from '@nestjs/common';
 import { CategoriesService } from './categories.service';
+import { Request } from 'express';
 import { CreateCategoryDto } from './dto/create-category.dto';
 import { UpdateCategoryDto } from './dto/update-category.dto';
+import { JwtAuthGuard } from 'src/Guard/jwt.guard';
+import { User } from 'src/user/entities/user.entities';
 
 @Controller('categories')
 export class CategoriesController {
   constructor(private readonly categoriesService: CategoriesService) {}
 
   @Post()
-  create(@Body() createCategoryDto: CreateCategoryDto) {
-    return this.categoriesService.create(createCategoryDto);
+  @UseGuards(JwtAuthGuard)
+  create(@Body() createCategoryDto: CreateCategoryDto, @Req() req: Request) {
+    const user = req.user as User;
+    const status = user.status;
+    return this.categoriesService.createCategories(createCategoryDto, status);
   }
 
   @Get()
   findAll() {
-    return this.categoriesService.findAll();
+    return this.categoriesService.findAllCategories();
   }
 
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.categoriesService.findOne(+id);
+  @Get(':categoriesId')
+  findOne(@Param('categoriesId') categoriesId: string) {
+    return this.categoriesService.findOneCategory(+categoriesId);
   }
 
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateCategoryDto: UpdateCategoryDto) {
-    return this.categoriesService.update(+id, updateCategoryDto);
+  @Put(':categoriesId')
+  @UseGuards(JwtAuthGuard)
+  update(@Param('categoriesId') categoriesId: string, @Body() updateCategoryDto: UpdateCategoryDto, @Req() req: Request) {
+    const user = req.user as User;
+    const status = user.status;
+    return this.categoriesService.updateCategories(+categoriesId, updateCategoryDto, status);
   }
 
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.categoriesService.remove(+id);
+  @Delete(':categoriesId')
+  remove(@Param('categoriesId') categoriesId: string, @Req() req: Request) {
+    const user = req.user as User;
+    const status = user.status;
+    return this.categoriesService.removeCategories(+categoriesId,status );
   }
 }

@@ -73,7 +73,7 @@ export class UserService {
       throw new HttpException('로그인에 실패했습니다', HttpStatus.BAD_REQUEST);
     }
     const payload = { sub: user.userId, status: user.status };
-    const accessToken = this.jwtService.sign(payload, { expiresIn: '1h' });
+    const accessToken = this.jwtService.sign(payload, {expiresIn: '1h'})
     const refreshToken = this.jwtService.sign(payload, { expiresIn: '7d' });
     return {
       access_token: accessToken,
@@ -83,18 +83,22 @@ export class UserService {
 
   //TODO: 유저 아이디를 사용해 유저 반환, 다른 곳에서 사용
   async findUserByID(userId: number): Promise<User | null> {
-    const user = await this.userRepository.findOne({ where: { userId } });
+    const user = await this.userRepository.findOne({ where: { userId, deletedAt: null },select:['userId', 'username', 'email', 'status'] });
     if (!user) {
       throw new HttpException(
         '해당하는 유저가 없습니다',
-        HttpStatus.BAD_REQUEST,
+        HttpStatus.NOT_FOUND,
       );
     }
     return user;
   }
 
   //TODO: 유저 업데이트
-  async updateUserService(updateDTO: updateUserDTO, userId: number, profilePic: string) {
+  async updateUserService(
+    updateDTO: updateUserDTO,
+    userId: number,
+    profilePic: string,
+  ) {
     const { username, password, status } = updateDTO;
     const find = await this.userRepository.findOne({ where: { userId } });
     if (!find) {
@@ -233,7 +237,7 @@ export class UserService {
       );
     }
     const newAccessToken = this.jwtService.sign(
-      { username: payload.username, sub: payload.sub },
+      { sub: payload.sub },
       { expiresIn: '1h' },
     );
     return {
