@@ -14,5 +14,5 @@ export class userFavorite {
   favorite: Favorite;
 
   @DeleteDateColumn()
-  deleteAt: Date;
+  deleteAt: Date | null;
 }

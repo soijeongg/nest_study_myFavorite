@@ -9,20 +9,24 @@ import { User } from '../user/entities/user.entities';
 import { PostService } from '../post/post.service';
 
 @Injectable()
-export class CommentService implements ICommentService {
+export class CommentService {
   constructor(
     @InjectRepository(Comment) private CommentRepository: Repository<Comment>,
     private postService: PostService,
   ) {}
-
+  //댓글 생성
   async createCommentService(
+    categoryId: number,
+    subCategoryId: number,
+    subSubCategoryId: number,
+    favoriteId: number,
+    postId: number,
     createCommentDto: CreateCommentDto,
     user: User,
-    postId: number,
   ): Promise<Comment> {
     //먼저 포스트 아이디로 포스트를 찾는다
-    const post = await this.postService.findOnePostService(+postId);
-    const { content } = createCommentDto;
+    const post = await this.postService.findOnePostService(+categoryId, +subCategoryId, +subSubCategoryId, +favoriteId, +postId, user)
+    const { content, anonymous } = createCommentDto;
     if (!post) {
       throw new HttpException(
         '해당하는 포스트가 없습니다',
@@ -32,31 +36,24 @@ export class CommentService implements ICommentService {
     const comment = this.CommentRepository.create({
       content,
       user,
-      post,
+      post:{postId: post.postId},
+      ...(anonymous && { anonymous }),
     });
     return await this.CommentRepository.save(comment);
   }
-  /*
-
-  findAll() {
-    return `This action returns all comment`;
-  }
-     */
-
-  async findOneService(commentId: number) {
-    return this.CommentRepository.findOne({
-      where: { commentId },
-    });
-  }
 
   async updateCommentService(
+    categoryId: number,
+    subCategoryId: number,
+    subSubCategoryId: number,
+    favoriteId: number,
     postId: number,
     commentId: number,
     updateCommentDto: UpdateCommentDto,
     user: User,
   ): Promise<Comment> {
     //포스트를 검사하고 그 후 있다면 유저가 같은지 확인한다
-    const post = await this.postService.findOnePostService(+postId);
+    const post = await this.postService.findOnePostService(+categoryId, +subCategoryId, +subSubCategoryId, +favoriteId, +postId, user);
     const { content } = updateCommentDto;
     if (!post) {
       throw new HttpException(
@@ -65,7 +62,9 @@ export class CommentService implements ICommentService {
       );
     }
     //코멘트를 검사한다
-    const comment = await this.findOneService(commentId);
+    const comment = await this.CommentRepository.findOne({
+      where: { commentId, post:{postId}, deleteAt: null},
+    });
     if (!comment) {
       throw new HttpException(
         '해당하는 댓글이 없습니다',
@@ -81,11 +80,32 @@ export class CommentService implements ICommentService {
   }
 
   async removeComment(
+    categoryId: number,
+    subCategoryId: number,
+    subSubCategoryId: number,
+    favoriteId: number,
     postId: number,
-    CommentId: number,
+    commentId: number,
     user: User,
-  ): Promise<boolean> {
-    const comment = await this.findOneService(CommentId);
+  ) {
+    const post = await this.postService.findOnePostService(
+      +categoryId,
+      +subCategoryId,
+      +subSubCategoryId,
+      +favoriteId,
+      +postId,
+      user,
+    );
+    if (!post) {
+      throw new HttpException(
+        '존재하지 않는 포스트 입니다',
+        HttpStatus.NOT_FOUND,
+      );
+    }
+    const comment = await this.CommentRepository.findOne({
+      where: { commentId, post: { postId }, deleteAt: null },
+    });
+
     if (!comment) {
       throw new HttpException(
         '해당하는 댓글이 없습니다',
@@ -96,8 +116,41 @@ export class CommentService implements ICommentService {
     if (comment.user != user) {
       throw new HttpException('자신의 댓글이 아닙니다', HttpStatus.BAD_REQUEST);
     }
-    const deleteResult: DeleteResult =
-      await this.CommentRepository.delete(CommentId);
-    return deleteResult.affected > 0;
+    comment.deleteAt = new Date();
+    return  await this.CommentRepository.save(comment);
+  }
+
+  async findCommentService(
+    categoryId: number,
+    subCategoryId: number,
+    subSubCategoryId: number,
+    favoriteId: number,
+    postId: number,
+    commentId: number,
+    user: User,
+  ): Promise<Comment> {
+    //포스트를 검사하고 그 후 있다면 유저가 같은지 확인한다
+    const post = await this.postService.findOnePostService(+categoryId, +subCategoryId, +subSubCategoryId, +favoriteId, +postId, user);
+    if (!post) {
+      throw new HttpException(
+        '해당하는 포스트가 없습니다',
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+    //코멘트를 검사한다
+    const comment = await this.CommentRepository.findOne({
+      where: { commentId, post:{postId}, deleteAt: null},
+    });
+    if (!comment) {
+      throw new HttpException(
+        '해당하는 댓글이 없습니다',
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+    //유저가 맞는지 검사한다
+    if (comment.user != user) {
+      throw new HttpException('자신의 댓글이 아닙니다', HttpStatus.BAD_REQUEST);
+    }
+    return comment;
   }
 }

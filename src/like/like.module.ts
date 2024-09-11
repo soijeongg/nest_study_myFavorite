@@ -6,9 +6,10 @@ import { Like } from './entities/like.entity';
 import { PostModule } from '../post/post.module';
 import { UserModule } from '../user/user.module';
 import { JwtAuthGuard } from '../Guard/jwt.guard';
+import { CommentModule } from 'src/comment/comment.module';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Like]), PostModule, UserModule],
+  imports: [TypeOrmModule.forFeature([Like]), PostModule, UserModule, CommentModule],
   controllers: [LikeController],
   providers: [LikeService, JwtAuthGuard],
   exports: [LikeService],

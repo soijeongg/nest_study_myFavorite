@@ -15,7 +15,7 @@ export class SubSubCategory {
   createAt: Date;
 
   @DeleteDateColumn()
-  deleteAt: Date;
+  deleteAt: Date | null;
 
   @OneToMany(() => Favorite, (Favorite) => Favorite.subSubCategory)
   favorites: Favorite[];

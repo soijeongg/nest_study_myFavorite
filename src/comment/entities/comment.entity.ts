@@ -5,9 +5,12 @@ import {
   PrimaryGeneratedColumn,
   CreateDateColumn,
   UpdateDateColumn,
+  OneToMany,
+  DeleteDateColumn,
 } from 'typeorm';
 import { Posts } from '../../post/entities/post.entities';
 import { User } from '../../user/entities/user.entities';
+import { Like } from 'src/like/entities/like.entity';
 
 @Entity()
 export class Comment {
@@ -17,7 +20,7 @@ export class Comment {
   @Column()
   content: string;
 
-  @Column()
+  @Column({default: false})
   anonymous: boolean;
 
   @CreateDateColumn()
@@ -26,8 +29,14 @@ export class Comment {
   @UpdateDateColumn()
   updatedAt: Date;
 
+  @DeleteDateColumn()
+  deleteAt: Date | null;
+
   @ManyToOne(() => Posts, (post) => post.comments)
   post: Posts;
+
+  @OneToMany(() => Like, (like) => like.comment)
+  likes: Like[];
 
   @ManyToOne(() => User, (user) => user.comments)
   user: User;

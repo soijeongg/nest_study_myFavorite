@@ -49,7 +49,7 @@ export class CategoriesService {
         categoryName: category.categoriesName,
         subCategories: category.subCategories.map((subCategory) => ({
           subCategoryId: subCategory.subcategoriesId,
-          subCategoryName: subCategory.subCategoriesName,
+          subCategoryName: subCategory.subCategoryName,
         })),
       })),
     };

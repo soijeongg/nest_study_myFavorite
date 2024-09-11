@@ -12,6 +12,10 @@ import {
   OneToMany,
 } from 'typeorm';
 
+export enum PostType {
+  notice = 'notice',
+  normal = 'normal',
+}
 @Entity()
 export class Posts {
   @PrimaryGeneratedColumn()
@@ -24,16 +28,23 @@ export class Posts {
   description: string;
 
   @Column()
-  imageUrl: string;
+  imageUrl: string | null;
 
   @CreateDateColumn()
   createAt: Date;
 
   @UpdateDateColumn()
-  updateAt: Date | null;
+  deleteAt: Date | null;
 
-  @Column()
+  @Column({default: false})
   anonymous: boolean;
+
+  @Column({
+    type: 'enum',
+    enum: PostType,
+    default: PostType.normal,
+  })
+  postType: PostType;
 
   @ManyToOne(() => User, (user) => user.posts)
   user: User;

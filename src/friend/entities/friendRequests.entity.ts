@@ -28,6 +28,6 @@ export class FriendRequest {
   @CreateDateColumn()
   createdAt: Date;
 
-  @DeleteDateColumn({ nullable: true })
-  deleteAt: Date;
+  @DeleteDateColumn()
+  deleteAt: Date | null;
 }

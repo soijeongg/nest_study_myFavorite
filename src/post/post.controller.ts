@@ -23,41 +23,85 @@ import { User } from '../user/entities/user.entities';
 import { Posts } from './entities/post.entities';
 import { IpostController } from './interface/IpostController';
 
-@Controller('post')
-export class PostController implements IpostController {
+@Controller(
+  'categories/:categoryId/subCategories/:subCategoryId/subSubCategory/:subSubCategoryId/favorite/:FavoriteId/posts'
+)
+export class PostController {
   constructor(private readonly postService: PostService) {}
 
-  @UseGuards(JwtAuthGuard)
   @Post()
+  @UseGuards(JwtAuthGuard)
   @UseInterceptors(FileInterceptor('file'))
   async createPost(
-    @UploadedFile() file: Express.Multer.File,
+    @Param('categoryId') categoryId: string,
+    @Param('subCategoryId') subCategoryId: string,
+    @Param('subSubCategoryId') subSubCategoryId: string,
+    @Param('FavoriteId') FavoriteId: string,
     @Body() createPostDto: CreatePostDto,
     @Req() req: Request,
+    @UploadedFile() file?: Express.Multer.File,
   ): Promise<Posts> {
     const user = req.user as User;
-    return this.postService.createPostService(
+    const imageUrl = file ? file.filename : null;
+    return await this.postService.createPostService(
       createPostDto,
-      file.filename,
+      +FavoriteId,
+      +categoryId,
+      +subCategoryId,
+      +subSubCategoryId,
       user,
+      imageUrl,
     );
   }
 
   @Get()
-  async findAllPosts(): Promise<Posts[]> {
-    return this.postService.findAllPostService();
-  }
-
-  @Get(':id')
-  async findOnePost(@Param('id') id: string) {
-    return this.postService.findOnePostService(+id);
-  }
-
   @UseGuards(JwtAuthGuard)
-  @Put(':id')
+  async findAllPosts(
+    @Param('categoryId') categoryId: string,
+    @Param('subCategoryId') subCategoryId: string,
+    @Param('subSubCategoryId') subSubCategoryId: string,
+    @Param('FavoriteId') FavoriteId: string,
+    @Req() req: Request,
+  ) {
+    const user = req.user as User;
+    return await this.postService.findAllPostService(
+      +FavoriteId,
+      +categoryId,
+      +subCategoryId,
+      +subSubCategoryId,
+      user,
+    );
+  }
+
+  @Get(':postId')
+  async findOnePost(
+    @Param('categoryId') categoryId: string,
+    @Param('subCategoryId') subCategoryId: string,
+    @Param('subSubCategoryId') subSubCategoryId: string,
+    @Param('FavoriteId') FavoriteId: string,
+    @Param('postId') postId: string,
+    @Req() req: Request,
+  ) {
+    const user = req.user as User;
+    return this.postService.findOnePostService(
+      +categoryId,
+      +subCategoryId,
+      +subSubCategoryId,
+      +FavoriteId,
+      +postId,
+      user,
+    );
+  }
+
+  @Put(':postId')
+  @UseGuards(JwtAuthGuard)
   @UseInterceptors(FileInterceptor('file'))
   async updatePost(
-    @Param('id') id: string,
+    @Param('categoryId') categoryId: string,
+    @Param('subCategoryId') subCategoryId: string,
+    @Param('subSubCategoryId') subSubCategoryId: string,
+    @Param('FavoriteId') FavoriteId: string,
+    @Param('postId') postId: string,
     @Body() updatePostDto: UpdatePostDto,
     @Req() req: Request,
     @UploadedFile() file?: Express.Multer.File,
@@ -65,27 +109,37 @@ export class PostController implements IpostController {
     const user = req.user as User;
     const imageUrl = file ? file.filename : null;
     return this.postService.updatePostService(
-      +id,
+      +categoryId,
+      +subCategoryId,
+      +subSubCategoryId,
+      +FavoriteId,
+      +postId,
+      user,
       updatePostDto,
       imageUrl,
-      user,
     );
   }
 
+  @Delete(':postId')
   @UseGuards(JwtAuthGuard)
-  @Delete(':id')
   async removePost(
-    @Param('id') id: string,
+    @Param('categoryId') categoryId: string,
+    @Param('subCategoryId') subCategoryId: string,
+    @Param('subSubCategoryId') subSubCategoryId: string,
+    @Param('FavoriteId') FavoriteId: string,
+    @Param('postId') postId: string,
     @Res() res: Response,
     @Req() req: Request,
   ): Promise<void> {
     const user = req.user as User;
-    await this.postService.removePostService(+id, user);
+    await this.postService.removePostService(
+      +categoryId,
+      +subCategoryId,
+      +subSubCategoryId,
+      +FavoriteId,
+      +postId,
+      user,
+    );
     res.status(HttpStatus.OK).json({ message: '삭제가 완료되었습니다' });
-  }
-
-  @Get()
-  async searchpost(@Body() searchTerm: string): Promise<Posts[] | Posts> {
-    return await this.postService.searchPostService(searchTerm);
   }
 }

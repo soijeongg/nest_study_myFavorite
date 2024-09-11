@@ -8,10 +8,11 @@ import { UserModule } from '../user/user.module';
 import { MulterModule } from '@nestjs/platform-express';
 import { User } from 'src/user/entities/user.entities';
 import { SubSubCategoriesModule } from 'src/sub-sub-categories/sub-sub-categories.module';
+import { TokenBlacklist } from 'src/user/entities/tokenBlacklist';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([Favorite, User]),
+    TypeOrmModule.forFeature([Favorite, User, TokenBlacklist]),
     UserModule, //엔티티 사용해서
     SubSubCategoriesModule,
   ],

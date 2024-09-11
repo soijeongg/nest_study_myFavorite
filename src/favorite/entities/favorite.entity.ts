@@ -32,7 +32,7 @@ export class Favorite {
   @DeleteDateColumn()
   deleteAt: Date;
 
-  @OneToMany(() => userFavorite, (userFavorite) => userFavorite.Favorite)
+  @OneToMany(() => userFavorite, (userFavorite) => userFavorite.favorite)
   userFavorite: userFavorite[];
 
   @ManyToOne(() => SubSubCategory, (SubSubCategory) => SubSubCategory.favorites)

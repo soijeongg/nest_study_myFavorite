@@ -6,10 +6,11 @@ import { SubCategoriesModule } from 'src/sub-categories/sub-categories.module';
 import { UserModule } from 'src/user/user.module';
 import { SubSubCategory } from './entities/sub-sub-category.entity';
 import { User } from 'src/user/entities/user.entities';
+import { TokenBlacklist } from 'src/user/entities/tokenBlacklist';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([SubSubCategory, User]),
+    TypeOrmModule.forFeature([SubSubCategory, User, TokenBlacklist]),
     SubCategoriesModule,
     UserModule,
   ],

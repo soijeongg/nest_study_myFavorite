@@ -1,4 +1,5 @@
-import { IsString, IsNumber } from 'class-validator';
+import { IsString, IsNumber, isBoolean } from 'class-validator';
+import { PostType } from '../entities/post.entities';
 export class CreatePostDto {
   @IsString()
   title: string;
@@ -6,6 +7,7 @@ export class CreatePostDto {
   @IsString()
   description: string;
 
-  @IsNumber()
-  favoriteId: number;
+  anonymous?: boolean;
+
+  postType?: PostType;
 }

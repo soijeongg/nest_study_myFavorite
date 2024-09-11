@@ -95,6 +95,30 @@ export class FavoriteService {
       })),
     };
   }
+  //히니 가져오기 
+  async getOneFavorite(
+    categoryId: number,
+    subCategoryId: number,
+    subSubCategoryId: number,
+    favoriteId: number,
+  ) {
+    const subCate = await this.subSubCategoryService.findOneSubSubCategory(
+      categoryId,
+      subCategoryId,
+      subSubCategoryId,
+    );
+    if (!subCate) {
+      throw new HttpException(
+        '해당하는 카테고리가 존재하지 않습니다',
+        HttpStatus.NOT_FOUND,
+      );
+    }
+    //이 서브 카테고리를 사용해 검색
+    const findFav = await this.FavoriteRepository.findOne({
+      where: { subSubCategory: subCate, favoriteId },
+    });
+    return findFav;
+  }
 
   async updateFavoriteService(
     favoriteId: number,
@@ -241,7 +265,10 @@ export class FavoriteService {
     const user = await this.userService.findUserByID(userId);
     //이 유저와 favorite로 찾는다
     const findUSerFav = await this.userFavoriteRepostiory.findOne({
-      where: {user: user, Favorite: fav}
+      where: {
+        user: user,
+        favorite: fav,
+      },
     });
     if (!findUSerFav) {
       throw new HttpException(

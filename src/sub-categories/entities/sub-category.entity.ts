@@ -14,7 +14,7 @@ export class SubCategory {
   createAt: Date;
 
   @DeleteDateColumn()
-  deleteAt: Date;
+  deleteAt: Date | null;
 
   @ManyToOne(() => Category, (Category) => Category.subCategories)
   Category: Category;

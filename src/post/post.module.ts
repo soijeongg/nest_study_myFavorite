@@ -10,13 +10,18 @@ import { UserService } from 'src/user/user.service';
 import { TokenBlacklist } from 'src/user/entities/tokenBlacklist';
 import { JwtService } from '@nestjs/jwt';
 import { MulterModule } from '@nestjs/platform-express';
+import { SubSubCategory } from 'src/sub-sub-categories/entities/sub-sub-category.entity';
+import { UserModule } from 'src/user/user.module';
+import { SubSubCategoriesModule } from 'src/sub-sub-categories/sub-sub-categories.module';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([Posts, Favorite, User, TokenBlacklist]),
+    TypeOrmModule.forFeature([Posts, Favorite, User, TokenBlacklist, SubSubCategory]),
     MulterModule.register({
-      dest: './uploads',
+      dest: './posts',
     }),
+    UserModule,
+    SubSubCategoriesModule,
   ],
   controllers: [PostController],
   providers: [PostService, JwtAuthGuard, UserService, JwtService],

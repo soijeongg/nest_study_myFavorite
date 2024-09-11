@@ -96,7 +96,7 @@ export class FavoriteController {
   ) {
     const user = req.user as User;
     const userId = user.userId;
-    return await this.favoriteService.createUserFavorite(+FavoritreId, +categoryId, +subCategoryId, +subSubCategoryId, +userId)
+    return await this.favoriteService.createUserFavorite(+FavoriteId, +categoryId, +subCategoryId, +subSubCategoryId, +userId)
   }
 
   @Delete(': favoriteId/removeFavorite')
@@ -111,6 +111,6 @@ export class FavoriteController {
     const user = req.user as User;
     const userId = user.userId;
      await this.favoriteService.removeMyFav(+FavoriteId, +categoryId,+subCategoryId, +subSubCategoryId, +userId)
-     res.status(HttpStatus.ok).json({message: '나의 최애에서 삭제되었습니다'})
+     res.status(HttpStatus.OK).json({message: '나의 최애에서 삭제되었습니다'})
   }
 }
