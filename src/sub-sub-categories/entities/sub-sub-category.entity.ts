@@ -1,3 +1,4 @@
+import { Category } from "src/categories/entities/category.entity";
 import { Favorite } from "src/favorite/entities/favorite.entity";
 import { SubCategory } from "src/sub-categories/entities/sub-category.entity";
 import { Entity, OneToMany, ManyToOne, PrimaryGeneratedColumn, Column, CreateDateColumn, DeleteDateColumn } from "typeorm";

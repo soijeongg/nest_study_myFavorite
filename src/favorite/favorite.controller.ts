@@ -6,8 +6,6 @@ import {
   Put,
   Param,
   Delete,
-  UseInterceptors,
-  UploadedFile,
   UseGuards,
   Req,
   Res,
@@ -26,108 +24,93 @@ import { Favorite } from './entities/favorite.entity';
 import { User } from '../user/entities/user.entities';
 import { JwtAuthGuard } from '../Guard/jwt.guard';
 
-@Controller('favorite')
-export class FavoriteController implements IfavoriteController {
+@Controller('categories/:categoryId/sub-categories/:subCategoryId/subSubCategory/:subCategoryId/favorite')
+export class FavoriteController {
   private readonly logger = new Logger(FavoriteController.name);
   constructor(private readonly favoriteService: FavoriteService) {}
 
-  @UseGuards(JwtAuthGuard)
   @Post()
-  @UseInterceptors(FileInterceptor('file', multerOptions()))
-  async createFavoriteController(
-    @UploadedFile() file: Express.Multer.File,
-    @Body() createFavoriteDto: CreateFavoriteDto,
-    @Req() req: Request,
-  ): Promise<Favorite> {
-    try {
-      const user = req.user as User;
-      console.log(file);
-      return this.favoriteService.createFavoriteService(
-        file.filename,
-        createFavoriteDto,
-        user,
-      );
-    } catch (error) {
-      this.logger.error('Error creating favorite', error.stack);
-      throw error;
-    }
-  }
-
   @UseGuards(JwtAuthGuard)
-  @Get('me')
-  async getAllFavoeiteController(@Req() req: Request): Promise<Favorite[]> {
+  async createFavoriteController(
+    @Param('categoryId') categoryId: string,
+    @Param('subCategoryId') subCategoryId: string,
+    @Param('subSubCategoryId') subSubCategoryId: string,
+    @Req() req: Request,
+    @Body() createFavoriteDto: CreateFavoriteDto,
+  ) {
     const user = req.user as User;
-    return await this.favoriteService.getAllFavoriteService(user);
+    const status = user.status;
+    return await this.favoriteService.createFavoriteService(createFavoriteDto, +categoryId, +subCategoryId, +subSubCategoryId, status);
   }
 
   @Get()
-  async getAllUSerFavoriteController() {
-    return await this.favoriteService.getAllUserFavoriteService();
-  }
-  //애는 그냥 아이디 받고
-  @Get(':FavoriteId')
-  async getOneFavoriteController(
-    @Param('FavoriteId') FavoriteId: string,
-  ): Promise<Favorite> {
-    return await this.favoriteService.getFavoriteOneService(+FavoriteId);
-  }
-  //다른 사람들꺼보기
-  @Get('other/:userld')
-  async getOtherUserFavoriteController(
-    @Param('userld') userld: string,
-  ): Promise<Favorite[]> {
-    return await this.getOtherUserFavoriteController(userld);
+  async getAllFavoeiteController(
+    @Param('categoryId') categoryId: string,
+    @Param('subCategoryId') subCategoryId: string,
+    @Param('subSubCategoryId') subSubCategoryId: string,
+  ) {
+    return await this.favoriteService.getAllFavoriteService(+categoryId, +subCategoryId, +subSubCategoryId)
   }
 
-  @UseGuards(JwtAuthGuard)
   @Put(':FavoriteId')
-  @UseInterceptors(FileInterceptor('file', multerOptions()))
+  @UseGuards(JwtAuthGuard)
   async updateFavoriteController(
+    @Param('categoryId') categoryId: string,
+    @Param('subCategoryId') subCategoryId: string,
+    @Param('subSubCategoryId') subSubCategoryId: string,
     @Param('FavoriteId') FavoriteId: string,
     @Body() updateFavoriteDto: UpdateFavoriteDto,
     @Req() req: Request,
-    @UploadedFile() file?: Express.Multer.File,
   ) {
-    const imageUrl = file ? file.filename : null;
     const user = req.user as User;
-    return await this.favoriteService.updateFavoriteService(
-      +FavoriteId,
-      updateFavoriteDto,
-      user,
-      imageUrl,
-    );
+    const status = user.status;
+    return await this.favoriteService.updateFavoriteService(+FavoriteId, +categoryId, +subCategoryId, +subSubCategoryId, updateFavoriteDto, status)
   }
 
-  @UseGuards(JwtAuthGuard)
   @Delete(':FavoriteId')
+  @UseGuards(JwtAuthGuard)
   async deleteFavoritecontroller(
-    @Req() req: Request,
+    @Param('categoryId') categoryId: string,
+    @Param('subCategoryId') subCategoryId: string,
+    @Param('subSubCategoryId') subSubCategoryId: string,
     @Param('FavoriteId') FavoriteId: string,
+    @Body() updateFavoriteDto: UpdateFavoriteDto,
+    @Req() req: Request,
     @Res() res: Response,
-  ): Promise<void> {
+  ) {
     const user = req.user as User;
-    await this.favoriteService.deleteFavoriteService(+FavoriteId, user);
+    const status = user.status;
+    await this.favoriteService.deleteFavoriteService(+FavoriteId, +categoryId, +subCategoryId, +subSubCategoryId, status)
     res.status(HttpStatus.OK).json({ message: '삭제가 완료되었습니다' });
   }
 
-  @Get('search')
-  async searchFavoriteCategoriesController(
-    @Query('categories') categories: string,
-  ): Promise<Favorite[]> {
-    return await this.favoriteService.searchCategoriesService(categories);
+  @Get(':favoriteId/createFavorite')
+  @UseGuards(JwtAuthGuard)
+  async createMyFavorite(
+    @Param('categoryId') categoryId: string,
+    @Param('subCategoryId') subCategoryId: string,
+    @Param('subSubCategoryId') subSubCategoryId: string,
+    @Param('FavoriteId') FavoriteId: string,
+    @Req() req: Request,
+    @Res() res: Response,
+  ) {
+    const user = req.user as User;
+    const userId = user.userId;
+    return await this.favoriteService.createUserFavorite(+FavoritreId, +categoryId, +subCategoryId, +subSubCategoryId, +userId)
   }
 
-  @Get('serach')
-  async searchFavoriteNameController(
-    @Query('name') name: string,
-  ): Promise<Favorite[]> {
-    return await this.favoriteService.searchFavoriteService(name);
-  }
-
-  @Get('serach')
-  async serachAllFavoriteController(
-    @Body() searchTerm: string,
-  ): Promise<Favorite[]> {
-    return await this.serachAllFavoriteController(searchTerm);
+  @Delete(': favoriteId/removeFavorite')
+  async removeMyFavorite(
+    @Param('categoryId') categoryId: string,
+    @Param('subCategoryId') subCategoryId: string,
+    @Param('subSubCategoryId') subSubCategoryId: string,
+    @Param('FavoriteId') FavoriteId: string,
+    @Req() req: Request,
+    @Res() res: Response,
+  ) {
+    const user = req.user as User;
+    const userId = user.userId;
+     await this.favoriteService.removeMyFav(+FavoriteId, +categoryId,+subCategoryId, +subSubCategoryId, +userId)
+     res.status(HttpStatus.ok).json({message: '나의 최애에서 삭제되었습니다'})
   }
 }

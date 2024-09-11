@@ -11,7 +11,7 @@ export class userFavorite {
   user: User;
 
   @ManyToOne(() => Favorite, (Favorite) => Favorite.userFavorite)
-  Favorites: Favorite[];
+  favorite: Favorite;
 
   @DeleteDateColumn()
   deleteAt: Date;

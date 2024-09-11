@@ -63,8 +63,8 @@ export class SubCategoriesService {
         subCategoryName: subCategory.subCategoryName,
         createAt: subCategory.createAt,
         SubSubCategories: subCategory.subSubCategories.map((subSub) => ({
-          subSubCategoryId: subSub.subSubCategoriesId,
-          subSubCategoryName: subSub.subSubCategoriesName,
+          subSubCategoryId: subSub.subSubCategoryId,
+          subSubCategoryName: subSub.subSubCategoryName,
         })),
       })),
     };
@@ -98,7 +98,7 @@ export class SubCategoriesService {
       subCategoryName: findSub.subCategoryName,
       createAt: findSub.createAt,
       subSubCategories: findSub.subSubCategories.map((subSub) => ({
-        subsubCategoriesId: subSub.subSubCategoriesId,
+        subsubCategoriesId: subSub.subSubCategoryId,
         subSubCategoriesName: subSub.subSubCategoryName,
         creatAt: subSub.createAt,
       })),

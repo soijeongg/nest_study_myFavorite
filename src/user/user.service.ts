@@ -7,6 +7,7 @@ import { User } from './entities/user.entities';
 import { createUserDTO, loginDTO, updateUserDTO } from './DTO';
 import { IuserService } from './interface/IuserService';
 import { TokenBlacklist } from './entities/tokenBlacklist';
+import { userFavorite } from 'src/user/entities/userFavorite.entities';
 //서비스는 모든 비즈니스 로직을 처리한다  -> 레포지토리는 오직 db접근만
 @Injectable()
 export class UserService {
@@ -15,6 +16,8 @@ export class UserService {
     private readonly jwtService: JwtService, //JwtService는 AuthModule에서 설정한 JwtModule을 통해 제공된 설정을 사용하여 작동
     @InjectRepository(TokenBlacklist)
     private tokenBlacklistRepository: Repository<TokenBlacklist>,
+    @InjectRepository(userFavorite)
+    private userFavoriteRepostiory: Repository<userFavorite>,
   ) {}
   //TODO:로그인을 위한 이메일 검사 및 비밀번호 확인
   async validateUser(email: string, password: string): Promise<any> {
@@ -83,12 +86,9 @@ export class UserService {
 
   //TODO: 유저 아이디를 사용해 유저 반환, 다른 곳에서 사용
   async findUserByID(userId: number): Promise<User | null> {
-    const user = await this.userRepository.findOne({ where: { userId, deletedAt: null },select:['userId', 'username', 'email', 'status'] });
+    const user = await this.userRepository.findOne({ where: { userId, deletedAt: null }});
     if (!user) {
-      throw new HttpException(
-        '해당하는 유저가 없습니다',
-        HttpStatus.NOT_FOUND,
-      );
+      throw new HttpException('해당하는 유저가 없습니다', HttpStatus.NOT_FOUND);
     }
     return user;
   }
@@ -179,10 +179,8 @@ export class UserService {
         })),
       userFavorite: user.userFavorites.map((userFavorite) => ({
         userFavoriteId: userFavorite.userFavoriteId,
-        Favorite: userFavorite.Favorites.map((favorite) => ({
-          favoriteId: favorite.favoriteId,
-          favoriteName: favorite.name,
-        })),
+        favoriteId: userFavorite.favorite.favoriteId,
+        favoriteName: userFavorite.favorite.name,
       })),
     };
   }
@@ -209,10 +207,8 @@ export class UserService {
       })),
       userFavorite: user.userFavorites.map((userFavorite) => ({
         userFavoriteId: userFavorite.userFavoriteId,
-        Favorite: userFavorite.Favorites.map((favorite) => ({
-          favoriteId: favorite.favoriteId,
-          favoriteName: favorite.name,
-        })),
+        favoriteId: userFavorite.favorite.favoriteId,
+        favoriteName: userFavorite.favorite.name,
       })),
     };
   }

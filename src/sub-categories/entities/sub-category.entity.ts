@@ -21,7 +21,7 @@ export class SubCategory {
 
   @OneToMany(
     () => SubSubCategory,
-    (SubSubCategory) => SubSubCategory.SubCategory,
+    (SubSubCategory) => SubSubCategory.subCategory,
   )
   subSubCategories: SubSubCategory[];
 }

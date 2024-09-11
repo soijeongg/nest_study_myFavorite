@@ -1,6 +1,6 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Req, Put } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Req, Put, Res, HttpStatus } from '@nestjs/common';
 import { CategoriesService } from './categories.service';
-import { Request } from 'express';
+import { Request, Response } from 'express';
 import { CreateCategoryDto } from './dto/create-category.dto';
 import { UpdateCategoryDto } from './dto/update-category.dto';
 import { JwtAuthGuard } from 'src/Guard/jwt.guard';
@@ -37,9 +37,10 @@ export class CategoriesController {
   }
 
   @Delete(':categoriesId')
-  remove(@Param('categoriesId') categoriesId: string, @Req() req: Request) {
+  async remove(@Param('categoriesId') categoriesId: string, @Req() req: Request, @Res() res: Response) {
     const user = req.user as User;
     const status = user.status;
-    return this.categoriesService.removeCategories(+categoriesId,status );
+    await this.categoriesService.removeCategories(+categoriesId, status);
+    res.status(HttpStatus.OK).json({ message: '정상적으로 삭제되었습니다' });
   }
 }

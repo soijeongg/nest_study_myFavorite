@@ -1,132 +1,257 @@
-import { HttpException, HttpStatus, Injectable, Logger } from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { CreateFavoriteDto } from './dto/create-favorite.dto';
 import { UpdateFavoriteDto } from './dto/update-favorite.dto';
-import { IfavoriteService } from './interface/IfavoriteService';
-import { User } from '../user/entities/user.entities';
 import { Favorite } from './entities/favorite.entity';
 import { InjectRepository } from '@nestjs/typeorm';
-import { DeleteResult, Like, Repository } from 'typeorm';
-import { UserService } from '../user/user.service';
+import { Repository } from 'typeorm';
+import { SubSubCategoriesService } from 'src/sub-sub-categories/sub-sub-categories.service';
+import { userType } from 'src/user/DTO';
+import { userFavorite } from 'src/user/entities/userFavorite.entities';
+import { UserService } from 'src/user/user.service';
 
 @Injectable()
-export class FavoriteService implements IfavoriteService {
-  private readonly logger = new Logger(FavoriteService.name);
+export class FavoriteService {
   constructor(
     @InjectRepository(Favorite)
     private FavoriteRepository: Repository<Favorite>,
+    @InjectRepository(userFavorite)
+    private userFavoriteRepostiory: Repository<userFavorite>,
+    private subSubCategoryService: SubSubCategoriesService,
     private userService: UserService,
   ) {}
-
+  //TODO: 최애생성 카테고리, 서브카테고리, 서브카테고리,서브서브 카테고리 아이디를 받고 최애를 생성한다
   async createFavoriteService(
-    imageUrl: string,
     createDto: CreateFavoriteDto,
-    user: User,
-  ): Promise<Favorite> {
-    try {
-      const { name, description, categories } = createDto;
-      const newFav = this.FavoriteRepository.create({
-        name,
-        description,
-        categories,
-        imageUrl,
-        user,
-      });
-      return await this.FavoriteRepository.save(newFav);
-    } catch (error) {
-      this.logger.error('Error creating favorite', error.stack);
-      throw error;
+    categoryId: number,
+    subCategoryId: number,
+    subSubCategoryId: number,
+    status: string,
+  ) {
+    if (status != userType.ADMIN) {
+      throw new HttpException('권한이 없습니다', HttpStatus.BAD_REQUEST);
     }
-  }
-
-  async getAllFavoriteService(user: User): Promise<Favorite[]> {
-    return await this.FavoriteRepository.find({
-      where: { user },
+    const { name, description } = createDto;
+    //서서브 카테고리 찾기
+    const subCate = await this.subSubCategoryService.findOneSubSubCategory(
+      categoryId,
+      subCategoryId,
+      subSubCategoryId,
+    );
+    if (!subCate) {
+      throw new HttpException(
+        '해당하는 카테고리가 존재하지 않습니다',
+        HttpStatus.NOT_FOUND,
+      );
+    }
+    //이름 중복되었는지 확인
+    const checkName = await this.FavoriteRepository.findOne({
+      where: { name },
     });
-  }
-
-  async getAllUserFavoriteService(): Promise<Favorite[]> {
-    return await this.FavoriteRepository.find();
-  }
-
-  async getFavoriteOneService(favoriteId: number): Promise<Favorite> {
-    return await this.FavoriteRepository.findOne({
-      where: { favoriteId },
+    if (checkName.deleteAt != null) {
+      checkName.deleteAt = new Date();
+      return await this.FavoriteRepository.save(checkName);
+    }
+    if (checkName) {
+      throw new HttpException(
+        '이미 해당 최애가 존재합니다',
+        HttpStatus.BAD_REQUEST,
+      );
+      //이제 생성
+    }
+    const newFav = await this.FavoriteRepository.create({
+      name,
+      description,
+      subSubCategory: subCate,
     });
+    return await this.FavoriteRepository.save(newFav);
   }
 
-  async getOtherFavoriteService(userId: number) {
-    const user = await this.userService.findUserByID(userId);
-    return user.favorites;
+  //TODO: 전체 최애를 반환(최애는 최애만)
+  async getAllFavoriteService(
+    categoryId: number,
+    subCategoryId: number,
+    subSubCategoryId: number,
+  ) {
+    const subCate = await this.subSubCategoryService.findOneSubSubCategory(
+      categoryId,
+      subCategoryId,
+      subSubCategoryId,
+    );
+    if (!subCate) {
+      throw new HttpException(
+        '해당하는 카테고리가 존재하지 않습니다',
+        HttpStatus.NOT_FOUND,
+      );
+    }
+    //이 서브 카테고리를 사용해 검색
+    const findFavs = await this.FavoriteRepository.find({
+      where: { subSubCategory: subCate },
+    });
+    return {
+      favorites: findFavs.map((findFav) => ({
+        favoriteId: findFav.favoriteId,
+        favoriteName: findFav.name,
+        description: findFav.description,
+      })),
+    };
   }
 
   async updateFavoriteService(
     favoriteId: number,
+    categoryId: number,
+    subCategoryId: number,
+    subSubCategoryId: number,
     updateDto: UpdateFavoriteDto,
-    user: User,
-    imageUrl: string,
-  ): Promise<Favorite> {
+    status: string,
+  ) {
     //아이디로 찾고 유저 맞는지 확인 그리고 하나씩 있으면 바꾸고 save
+    if (status != userType.ADMIN) {
+      throw new HttpException('권한이 없습니다', HttpStatus.BAD_REQUEST);
+    }
+    const { name, description } = updateDto;
+    const subCate = await this.subSubCategoryService.findOneSubSubCategory(
+      categoryId,
+      subCategoryId,
+      subSubCategoryId,
+    );
+    if (!subCate) {
+      throw new HttpException(
+        '해당하는 카테고리가 존재하지 않습니다',
+        HttpStatus.NOT_FOUND,
+      );
+    }
     const fav = await this.FavoriteRepository.findOne({
-      where: { favoriteId },
+      where: { favoriteId, subSubCategory: subCate },
     });
     if (!fav) {
-      throw new HttpException('해당하는 최애가 없습니다', HttpStatus.NOT_FOUND);
+      throw new HttpException(
+        '존재하지 않는 최애 입니다',
+        HttpStatus.NOT_FOUND,
+      );
     }
-    if (fav.user != user) {
-      throw new HttpException('자신의 최애가 아닙니다', HttpStatus.BAD_REQUEST);
+    if (name) {
+      fav.name = name;
     }
-    if (updateDto.categories) {
-      fav.categories = updateDto.categories;
-    }
-    if (updateDto.description) {
-      fav.description = updateDto.description;
-    }
-    if (updateDto.name) {
-      fav.name = updateDto.name;
-    }
-    if (imageUrl) {
-      fav.imageUrl = imageUrl;
+    if (description) {
+      fav.description = description;
     }
     return await this.FavoriteRepository.save(fav);
   }
 
   async deleteFavoriteService(
     favoriteId: number,
-    user: User,
-  ): Promise<boolean> {
-    const fav = await this.getFavoriteOneService(favoriteId);
-    if (!fav) {
-      throw new HttpException('해당하는 최애가 없습니다', HttpStatus.NOT_FOUND);
+    categoryId: number,
+    subCategoryId: number,
+    subSubCategoryId: number,
+    status: string,
+  ) {
+    if (status != userType.ADMIN) {
+      throw new HttpException('권한이 없습니다', HttpStatus.BAD_REQUEST);
     }
-    if (fav.user != user) {
+    const subCate = await this.subSubCategoryService.findOneSubSubCategory(
+      categoryId,
+      subCategoryId,
+      subSubCategoryId,
+    );
+    if (!subCate) {
       throw new HttpException(
-        '내가 만든 최애만 삭제할 수 있습니다',
-        HttpStatus.BAD_REQUEST,
+        '해당하는 카테고리가 존재하지 않습니다',
+        HttpStatus.NOT_FOUND,
       );
     }
-    const deleteResult: DeleteResult =
-      await this.FavoriteRepository.delete(favoriteId);
-    return deleteResult.affected > 0;
-  }
-
-  async searchFavoriteService(name: string): Promise<Favorite[]> {
-    return this.FavoriteRepository.find({
-      where: [{ name: Like(`%${name}%`) }],
+    const fav = await this.FavoriteRepository.findOne({
+      where: { favoriteId, subSubCategory: subCate },
     });
+    if (!fav) {
+      throw new HttpException(
+        '존재하지 않는 최애 입니다',
+        HttpStatus.NOT_FOUND,
+      );
+    }
+    if (fav.deleteAt != null) {
+      throw new HttpException('이미 삭제된 최애입니다', HttpStatus.NOT_FOUND);
+    }
+    fav.deleteAt = new Date();
+    return await this.FavoriteRepository.save(fav);
   }
-  async searchCategoriesService(categories: string): Promise<Favorite[]> {
-    return this.FavoriteRepository.find({
-      where: [{ categories: Like(`%${categories}%`) }],
+  //최애를 선택하기
+  async createUserFavorite(
+    favoriteId: number,
+    categoryId: number,
+    subCategoryId: number,
+    subSubCategoryId: number,
+    userId: number,
+  ) {
+    const subCate = await this.subSubCategoryService.findOneSubSubCategory(
+      categoryId,
+      subCategoryId,
+      subSubCategoryId,
+    );
+    if (!subCate) {
+      throw new HttpException(
+        '해당하는 카테고리가 존재하지 않습니다',
+        HttpStatus.NOT_FOUND,
+      );
+    }
+    const fav = await this.FavoriteRepository.findOne({
+      where: { favoriteId, subSubCategory: subCate, deleteAt: null },
     });
+    if (!fav) {
+      throw new HttpException(
+        '존재하지 않는 최애 입니다',
+        HttpStatus.NOT_FOUND,
+      );
+    }
+    const user = await this.userService.findUserByID(userId);
+    //favorite를 사용해 저장한다
+    const newMyFav = await this.userFavoriteRepostiory.create({
+      user: user,
+      favorite: fav,
+    });
+    return await this.userFavoriteRepostiory.save(newMyFav);
   }
-
-  async seachAllFavoriteService(searchTerm: string) {
-    return this.FavoriteRepository.find({
-      where: [
-        { categories: Like(`%${searchTerm}%`) },
-        { name: Like(`%${searchTerm}%`) },
-        { description: Like(`%${searchTerm}%`) },
-      ],
+  //최에 삭제하기
+  async removeMyFav(
+    favoriteId: number,
+    categoryId: number,
+    subCategoryId: number,
+    subSubCategoryId: number,
+    userId: number,
+  ) {
+    const subCate = await this.subSubCategoryService.findOneSubSubCategory(
+      categoryId,
+      subCategoryId,
+      subSubCategoryId,
+    );
+    if (!subCate) {
+      throw new HttpException(
+        '해당하는 카테고리가 존재하지 않습니다',
+        HttpStatus.NOT_FOUND,
+      );
+    }
+    const fav = await this.FavoriteRepository.findOne({
+      where: { favoriteId, subSubCategory: subCate, deleteAt: null },
     });
+    if (!fav) {
+      throw new HttpException(
+        '존재하지 않는 최애 입니다',
+        HttpStatus.NOT_FOUND,
+      );
+    }
+    const user = await this.userService.findUserByID(userId);
+    //이 유저와 favorite로 찾는다
+    const findUSerFav = await this.userFavoriteRepostiory.findOne({
+      where: {user: user, Favorite: fav}
+    });
+    if (!findUSerFav) {
+      throw new HttpException(
+        '존재하지 않는 최애 입니다',
+        HttpStatus.NOT_FOUND,
+      );
+    }
+    if (findUSerFav.deleteAt != null) {
+      throw new HttpException('이미 삭제 되었습니다', HttpStatus.NOT_FOUND);
+    }
+    return await this.userFavoriteRepostiory.save(findUSerFav);
   }
 }
