@@ -32,15 +32,20 @@ export class SubCategoriesService {
       );
     }
     //카테고리 이름이 있는지 확인한다
-    const findSubCategory = category.subCategories.find(
-      (subCategory) => subCategory.subCategoryName === subCategoryName,
-    );
+    const findSubCategory = await this.subCategoriesRepostiory.findOne({
+        where:{subCategoryName: subCategoryName, Category: { categoriesId: categoryId }}
+    });
+    if(findSubCategory.deleteAt != null) {
+      findSubCategory.deleteAt = null;
+    return await this.subCategoriesRepostiory.save(findSubCategory)
+    }
     if (!findSubCategory) {
       throw new HttpException(
         '이미 존재하는 서브 카테고리 입니다',
         HttpStatus.BAD_REQUEST,
       );
     }
+
     const newSubCagtegory = await this.subCategoriesRepostiory.create({
       subCategoryName: subCategoryName,
       Category: { categoriesId: categoryId },
@@ -94,7 +99,7 @@ export class SubCategoriesService {
       createAt: findSub.createAt,
       subSubCategories: findSub.subSubCategories.map((subSub) => ({
         subsubCategoriesId: subSub.subSubCategoriesId,
-        subSubCategoriesName: subSub.subSubCategoriesName,
+        subSubCategoriesName: subSub.subSubCategoryName,
         creatAt: subSub.createAt,
       })),
     };
@@ -172,5 +177,22 @@ export class SubCategoriesService {
     //deleteAt에 날짜 넣기(소프트 삭제)
     findSub.deleteAt = new Date();
     await this.subCategoriesRepostiory.save(findSub);
+  }
+  async findOneSubCategory(categoryId: number, subCategoryId: number) {
+    const category = await this.categoriesService.findOneCategory(categoryId);
+    if (!category) {
+      throw new HttpException(
+        '해당하는 카테고리가 없습니다',
+        HttpStatus.NOT_FOUND,
+      );
+    }
+    //서브 카테고리를 찾는다
+   return await this.subCategoriesRepostiory.findOne({
+      where: {
+        subcategoriesId: subCategoryId,
+        deleteAt: null,
+        Category: { categoriesId: categoryId },
+      },
+    });
   }
 }

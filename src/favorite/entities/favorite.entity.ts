@@ -34,7 +34,7 @@ export class Favorite {
   @OneToMany(() => userFavorite, (userFavorite) => userFavorite.Favorites)
   userFavorite: userFavorite[];
 
-  @ManyToOne(() => SubSubCategory, (SubSubCategory) => SubSubCategory.favorite)
+  @ManyToOne(() => SubSubCategory, (SubSubCategory) => SubSubCategory.favorites)
   subSubCategory: SubSubCategory;
 
   @OneToMany(() => Posts, (post) => post.favorite)

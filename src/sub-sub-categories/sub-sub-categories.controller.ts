@@ -1,34 +1,96 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Controller, Get, Post, Body, Put, Param, Delete, UseGuards, Req } from '@nestjs/common';
 import { SubSubCategoriesService } from './sub-sub-categories.service';
 import { CreateSubSubCategoryDto } from './dto/create-sub-sub-category.dto';
 import { UpdateSubSubCategoryDto } from './dto/update-sub-sub-category.dto';
+import { JwtAuthGuard } from 'src/Guard/jwt.guard';
+import { Request, Response } from 'express';
+import { User } from 'src/user/entities/user.entities';
 
-@Controller('sub-sub-categories')
+@Controller(
+  'categories/:categoryId/sub-categories/:subCategoryId/subSubCategory',
+)
 export class SubSubCategoriesController {
-  constructor(private readonly subSubCategoriesService: SubSubCategoriesService) {}
+  constructor(
+    private readonly subSubCategoriesService: SubSubCategoriesService,
+  ) {}
 
   @Post()
-  create(@Body() createSubSubCategoryDto: CreateSubSubCategoryDto) {
-    return this.subSubCategoriesService.create(createSubSubCategoryDto);
+  @UseGuards(JwtAuthGuard)
+  async create(
+    @Param('categoryId') categoryId: string,
+    @Param('subCategoryId') subCategoryId: string,
+    @Body() createSubSubCategoryDto: CreateSubSubCategoryDto,
+    @Req() req: Request,
+  ) {
+    const user = req.user as User;
+    const status = user.status;
+    return await this.subSubCategoriesService.create(
+      createSubSubCategoryDto,
+      +categoryId,
+      +subCategoryId,
+      status,
+    );
   }
 
   @Get()
-  findAll() {
-    return this.subSubCategoriesService.findAll();
+  async findAll(
+    @Param('categoryId') categoryId: string,
+    @Param('subCategoryId') subCategoryId: string,
+  ) {
+    return await this.subSubCategoriesService.findAll(
+      +categoryId,
+      +subCategoryId,
+    );
   }
 
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.subSubCategoriesService.findOne(+id);
+  @Get(':subSubCategoryId')
+  async findOne(
+    @Param('categoryId') categoryId: string,
+    @Param('subCategoryId') subCategoryId: string,
+    @Param('subSubCategoryId') subSubCategoryId: string,
+  ) {
+    return await this.subSubCategoriesService.findOne(
+      +categoryId,
+      +subCategoryId,
+      +subSubCategoryId,
+    );
   }
 
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateSubSubCategoryDto: UpdateSubSubCategoryDto) {
-    return this.subSubCategoriesService.update(+id, updateSubSubCategoryDto);
+  @Put(':subSubCategoryId')
+  @UseGuards(JwtAuthGuard)
+  async update(
+    @Param('categoryId') categoryId: string,
+    @Param('subCategoryId') subCategoryId: string,
+    @Param('subSubCategoryId') subSubCategoryId: string,
+    @Body() updateSubSubCategoryDto: UpdateSubSubCategoryDto,
+    @Req() req: Request,
+  ) {
+    const user = req.user as User;
+    const status = user.status;
+    return await this.subSubCategoriesService.update(
+      +categoryId,
+      +subCategoryId,
+      +subSubCategoryId,
+      updateSubSubCategoryDto,
+      status,
+    );
   }
 
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.subSubCategoriesService.remove(+id);
+  @Delete(':subSubCategoryId')
+  @UseGuards(JwtAuthGuard)
+  async remove(
+    @Param('categoryId') categoryId: string,
+    @Param('subCategoryId') subCategoryId: string,
+    @Param('subSubCategoryId') subSubCategoryId: string,
+    @Req() req: Request,
+  ) {
+    const user = req.user as User;
+    const status = user.status;
+    return await this.subSubCategoriesService.remove(
+      +categoryId,
+      +subCategoryId,
+      +subCategoryId,
+      status,
+    );
   }
 }

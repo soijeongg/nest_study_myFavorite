@@ -1,1 +1,3 @@
-export class CreateSubSubCategoryDto {}
+export class CreateSubSubCategoryDto {
+  subSubCategoryName: string;
+}

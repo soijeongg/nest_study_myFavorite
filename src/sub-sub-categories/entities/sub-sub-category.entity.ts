@@ -5,10 +5,10 @@ import { Entity, OneToMany, ManyToOne, PrimaryGeneratedColumn, Column, CreateDat
 @Entity()
 export class SubSubCategory {
   @PrimaryGeneratedColumn()
-  subSubCategoriesId: number;
+  subSubCategoryId: number;
 
   @Column()
-  subSubCategoriesName: string;
+  subSubCategoryName: string;
 
   @CreateDateColumn()
   createAt: Date;
@@ -17,8 +17,8 @@ export class SubSubCategory {
   deleteAt: Date;
 
   @OneToMany(() => Favorite, (Favorite) => Favorite.subSubCategory)
-  favorite: Favorite[];
+  favorites: Favorite[];
 
   @ManyToOne(() => SubCategory, (SubCategory) => SubCategory.subSubCategories)
-  SubCategory: SubCategory[];
+  subCategory: SubCategory;
 }
