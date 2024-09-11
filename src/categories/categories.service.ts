@@ -58,6 +58,7 @@ export class CategoriesService {
   async findOneCategory(categoriesId: number) {
     const findOne = await this.categoriesRepostiory.findOne({
       where: { categoriesId, deleteAt: null },
+      relations: ['subCategories'],
     });
     if (!findOne) {
       throw new HttpException('존재하지 않는 카테고리 입니다', HttpStatus.NOT_FOUND)
@@ -67,7 +68,7 @@ export class CategoriesService {
       categoryName: findOne.categoriesName,
       subCategories: findOne.subCategories.map((subCategory) => ({
         subCategoryId: subCategory.subcategoriesId,
-        subCategoryName: subCategory.subCategoriesName,
+        subCategoryName: subCategory.subCategoryName,
       })),
     };
   }

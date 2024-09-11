@@ -15,6 +15,6 @@ export class Category {
   @DeleteDateColumn()
   deleteAt: Date;
 
-  @OneToMany(() => SubCategory, (subCategories) => subCategories.categories)
+  @OneToMany(() => SubCategory, (subCategories) => subCategories.Category)
   subCategories: SubCategory[];
 }

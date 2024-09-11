@@ -27,7 +27,7 @@
 <img src ="https://github.com/user-attachments/assets/9100d3e2-90b5-49c3-b389-42b524902a7b">
 
 ### api 명세서
-[노션 api 명세서]("https://pollen-experience-ed3.notion.site/d7049e6698444a04ad627e1bf5ed83da?pvs=4)
+[노션 api 명세서](https://pollen-experience-ed3.notion.site/d7049e6698444a04ad627e1bf5ed83da?pvs=4)
 
 ## 기술 스택
 백엔드: nest.js

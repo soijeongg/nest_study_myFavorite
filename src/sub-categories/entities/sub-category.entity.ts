@@ -8,7 +8,7 @@ export class SubCategory {
   subcategoriesId: number;
 
   @Column()
-  subCategoriesName: string;
+  subCategoryName: string;
 
   @CreateDateColumn()
   createAt: Date;
@@ -17,7 +17,7 @@ export class SubCategory {
   deleteAt: Date;
 
   @ManyToOne(() => Category, (Category) => Category.subCategories)
-  categories: Category;
+  Category: Category;
 
   @OneToMany(
     () => SubSubCategory,
