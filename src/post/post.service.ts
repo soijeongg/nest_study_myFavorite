@@ -226,4 +226,21 @@ export class PostService  {
     post.deleteAt = new Date();
     return await this.postRepository.save(post);
   }
+  async getPopularPosts(
+    categoryId: number,
+    subCategoryId: number,
+    subSubCategoryId: number,
+    favoriteId: number,
+  ) {
+    const findFav = await this.favoriteService.getOneFavorite(
+      categoryId,
+      subCategoryId,
+      subSubCategoryId,
+      favoriteId,
+    );
+    return this.postRepository.find({
+      order:{likes: 'DESC'}, where: {favorite: findFav},
+      take: 3,
+    });
+  }
 }

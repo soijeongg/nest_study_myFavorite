@@ -13,6 +13,7 @@ import { FavoriteModule } from './favorite/favorite.module';
 import { CategoriesModule } from './categories/categories.module';
 import { SubCategoriesModule } from './sub-categories/sub-categories.module';
 import { SubSubCategoriesModule } from './sub-sub-categories/sub-sub-categories.module';
+import { SchedulerModule } from './scheduler/scheduler.module';
 
 @Module({
   imports: [
@@ -29,6 +30,7 @@ import { SubSubCategoriesModule } from './sub-sub-categories/sub-sub-categories.
     CategoriesModule,
     SubCategoriesModule,
     SubSubCategoriesModule,
+    SchedulerModule,
   ],
   controllers: [AppController],
   providers: [AppService],

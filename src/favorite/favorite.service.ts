@@ -281,4 +281,21 @@ export class FavoriteService {
     }
     return await this.userFavoriteRepostiory.save(findUSerFav);
   }
+  async getMostPopularFavorite(
+    categoryId: number, 
+    subCategoryId: number, 
+    subSubCategoryId: number, 
+  ) {
+    const mostPopularFavorite = await this.FavoriteRepository
+    .createQueryBuilder('favorite')
+    .leftJoin('favorite.subSubCategory', 'subSubCategory')
+    .leftJoin('subSubCategory.subCategory', 'subCategory')
+    .leftJoin('subCategory.category', 'category')
+    .leftJoin('favorite.posts', 'post')
+    .where('category.id = :categoryId', { categoryId })
+    .andWhere('subCategory.id = :subCategoryId', { subCategoryId })
+    .andWhere('subSubCategory.id = :subSubCategoryId', { subSubCategoryId })
+
+    return mostPopularFavorite;
+  }
 }
