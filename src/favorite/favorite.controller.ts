@@ -10,23 +10,19 @@ import {
   Req,
   Res,
   HttpStatus,
-  Query,
-  Logger,
 } from '@nestjs/common';
 import { FavoriteService } from './favorite.service';
 import { Request, Response } from 'express';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { CreateFavoriteDto } from './dto/create-favorite.dto';
 import { UpdateFavoriteDto } from './dto/update-favorite.dto';
-import { IfavoriteController } from './interface/IfavoriteController';
-import { multerOptions } from '../multer-opotions';
-import { Favorite } from './entities/favorite.entity';
 import { User } from '../user/entities/user.entities';
 import { JwtAuthGuard } from '../Guard/jwt.guard';
 
-@Controller('categories/:categoryId/sub-categories/:subCategoryId/subSubCategory/:subCategoryId/favorite')
+@Controller(
+  'categories/:categoryId/sub-categories/:subCategoryId/subSubCategory/:subCategoryId/favorite',
+)
 export class FavoriteController {
-  private readonly logger = new Logger(FavoriteController.name);
   constructor(private readonly favoriteService: FavoriteService) {}
 
   @Post()
@@ -110,7 +106,28 @@ export class FavoriteController {
   ) {
     const user = req.user as User;
     const userId = user.userId;
-     await this.favoriteService.removeMyFav(+FavoriteId, +categoryId,+subCategoryId, +subSubCategoryId, +userId)
-     res.status(HttpStatus.OK).json({message: '나의 최애에서 삭제되었습니다'})
+    await this.favoriteService.removeMyFav(
+      +FavoriteId,
+      +categoryId,
+      +subCategoryId,
+      +subSubCategoryId,
+      +userId,
+    );
+    res.status(HttpStatus.OK).json({message: '나의 최애에서 삭제되었습니다'})
+  }
+
+  @Get('/best')
+  async getBest(
+    @Param('categoryId') categoryId: string,
+    @Param('subCategoryId') subCategoryId: string,
+    @Param('subSubCategoryId') subSubCategoryId: string,
+    @Res() res: Response,
+  ) {
+    const data = this.favoriteService.getPopularFavorite(
+      +categoryId,
+      +subCategoryId,
+      +subSubCategoryId,
+    );
+    return res.status(HttpStatus.OK).json(data);
   }
 }

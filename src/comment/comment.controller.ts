@@ -22,7 +22,7 @@ export class CommentController {
     @Req() req: Request,
   ): Promise<Comment> {
     const user = req.user as User;
-    return await this.commentService.createCommentService(+categoryId, +subCategoryId,+subSubCategoryId, FavoriteId, +postId, createDto, user);
+    return await this.commentService.createCommentService(+categoryId, +subCategoryId,+subSubCategoryId, +FavoriteId, +postId, createDto, user);
   }
   /* 덧글 전체는 포스트에 붙여나오고 덧글 하나만 보는 경우는 없음
   @Get(':postId')

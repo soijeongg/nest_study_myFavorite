@@ -281,21 +281,19 @@ export class FavoriteService {
     }
     return await this.userFavoriteRepostiory.save(findUSerFav);
   }
-  async getMostPopularFavorite(
-    categoryId: number, 
-    subCategoryId: number, 
-    subSubCategoryId: number, 
-  ) {
-    const mostPopularFavorite = await this.FavoriteRepository
-    .createQueryBuilder('favorite')
-    .leftJoin('favorite.subSubCategory', 'subSubCategory')
-    .leftJoin('subSubCategory.subCategory', 'subCategory')
-    .leftJoin('subCategory.category', 'category')
-    .leftJoin('favorite.posts', 'post')
-    .where('category.id = :categoryId', { categoryId })
-    .andWhere('subCategory.id = :subCategoryId', { subCategoryId })
-    .andWhere('subSubCategory.id = :subSubCategoryId', { subSubCategoryId })
-
-    return mostPopularFavorite;
+  async getPopularFavorite(categoryId: number, subCategoryId: number, subSubCategoryId: number) {
+    return this.FavoriteRepository.createQueryBuilder('favorite')
+      .leftJoinAndSelect('favorite.subSubCategory', 'subSubCategory')
+      .leftJoinAndSelect('subSubCategory.subCategory', 'subCategory')
+      .leftJoinAndSelect('subCategory.category', 'category')
+      .leftJoinAndSelect('favorite.posts', 'post')
+      .leftJoinAndSelect('post.likes', 'like')
+      .where('category.id = :categoryId', { categoryId })
+      .andWhere('subCategory.id = :subCategoryId', { subCategoryId })
+      .andWhere('subSubCategory.id = :subSubCategoryId', { subSubCategoryId })
+      .orderBy('COUNT(like.id)', 'DESC')
+      .groupBy('favorite.id')
+      .limit(1)
+      .getOne();
   }
 }

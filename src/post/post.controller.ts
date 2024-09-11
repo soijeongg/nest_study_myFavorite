@@ -142,4 +142,20 @@ export class PostController {
     );
     res.status(HttpStatus.OK).json({ message: '삭제가 완료되었습니다' });
   }
+  @Get('/best')
+  async getBest(
+    @Param('categoryId') categoryId: string,
+    @Param('subCategoryId') subCategoryId: string,
+    @Param('subSubCategoryId') subSubCategoryId: string,
+    @Param('FavoriteId') FavoriteId: string,
+    @Res() res: Response,
+  ) {
+    const data = this.postService.getPopularPost(
+      +categoryId,
+      +subCategoryId,
+      +subSubCategoryId,
+      +FavoriteId,
+    );
+    return res.status(HttpStatus.OK).json(data);
+  }
 }

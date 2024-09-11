@@ -226,7 +226,8 @@ export class PostService  {
     post.deleteAt = new Date();
     return await this.postRepository.save(post);
   }
-  async getPopularPosts(
+
+  async getALLPOST(
     categoryId: number,
     subCategoryId: number,
     subSubCategoryId: number,
@@ -239,8 +240,25 @@ export class PostService  {
       favoriteId,
     );
     return this.postRepository.find({
-      order:{likes: 'DESC'}, where: {favorite: findFav},
-      take: 3,
+      where: { favorite: findFav },
     });
+  }
+
+  async getPopularPost(categoryId: number, subCategoryId: number, subSubCategoryId: number, favoriteId: number) {
+    return this.postRepository
+      .createQueryBuilder('post')
+      .leftJoinAndSelect('post.favorite', 'favorite')
+      .leftJoinAndSelect('favorite.subSubCategory', 'subSubCategory')
+      .leftJoinAndSelect('subSubCategory.subCategory', 'subCategory')
+      .leftJoinAndSelect('subCategory.category', 'category')
+      .leftJoinAndSelect('post.likes', 'like')
+      .where('category.id = :categoryId', { categoryId })
+      .andWhere('subCategory.id = :subCategoryId', { subCategoryId })
+      .andWhere('subSubCategory.id = :subSubCategoryId', { subSubCategoryId })
+      .andWhere('favorite.id = :favoriteId', { favoriteId })
+      .orderBy('COUNT(like.id)', 'DESC')
+      .groupBy('post.id')
+      .limit(1)
+      .getOne();
   }
 }
