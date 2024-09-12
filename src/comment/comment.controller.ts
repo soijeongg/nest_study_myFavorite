@@ -6,12 +6,12 @@ import { JwtAuthGuard } from '../Guard/jwt.guard';
 import { User } from '../user/entities/user.entities';
 import { Response, Request } from 'express';
 import { Comment } from './entities/comment.entity';
-@Controller('categories/:categoryId/sub-categories/:subCategoryId/subSubCategory/:subCategoryId/favorite/:favoriteId/posts/:postId/comment')
+@Controller('categories/:categoryId/subCategories/:subCategoryId/subSubCategories/:subSubCategoryId/favorite/:favoriteId/posts/:postId/comment')
 export class CommentController {
   constructor(private readonly commentService: CommentService) {}
 
   @UseGuards(JwtAuthGuard)
-  @Post(':postId')
+  @Post()
   async createComment(
     @Body() createDto: CreateCommentDto,
     @Param('categoryId') categoryId: string,

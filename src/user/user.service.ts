@@ -3,7 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, Like } from 'typeorm';
 import { JwtService } from '@nestjs/jwt';
 import * as argon2 from 'argon2';
-import { User } from './entities/user.entities';
+import { User, userType } from './entities/user.entities';
 import { createUserDTO, loginDTO, updateUserDTO } from './DTO';
 import { IuserService } from './interface/IuserService';
 import { TokenBlacklist } from './entities/tokenBlacklist';
@@ -23,19 +23,21 @@ export class UserService {
   async validateUser(email: string, password: string): Promise<any> {
     const findEmail = await this.userRepository.findOne({
       where: { email, deletedAt: null },
-      select: ['userId', 'email', 'password'],
     });
     if (findEmail && (await argon2.verify(findEmail.password, password))) {
       return findEmail;
     }
     return null;
   }
-  async getAllService() {
+  async getAllService(user: User) {
+    if (user.status != userType.ADMIN) {
+      throw new HttpException('권한이 없습니다', HttpStatus.BAD_REQUEST);
+    }
     return await this.userRepository.find();
   }
 
   //TODO: 회원가입, 이메일, 비밀번호, 닉네임, 상태를 받아 저장한다
-  async createUserService(createDto: createUserDTO, profilePic: string): Promise<User> {
+  async createUserService(createDto: createUserDTO, profilePic: string |null): Promise<User> {
     const { password, email, username, status } = createDto;
     const hashPassword = await argon2.hash(password);
     //이메일 닉네임 중복체크
@@ -63,6 +65,8 @@ export class UserService {
     }
     const newUser = await this.userRepository.create({
       ...createDto,
+      status,
+      profilePic: profilePic ? profilePic: null,
       password: hashPassword,
     });
     return this.userRepository.save(newUser);
@@ -76,7 +80,7 @@ export class UserService {
       throw new HttpException('로그인에 실패했습니다', HttpStatus.BAD_REQUEST);
     }
     const payload = { sub: user.userId, status: user.status };
-    const accessToken = this.jwtService.sign(payload, {expiresIn: '1h'})
+    const accessToken = this.jwtService.sign(payload, { expiresIn: '1h' });
     const refreshToken = this.jwtService.sign(payload, { expiresIn: '7d' });
     return {
       access_token: accessToken,

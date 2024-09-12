@@ -47,7 +47,7 @@ export class FavoriteService {
     const checkName = await this.FavoriteRepository.findOne({
       where: { name },
     });
-    if (checkName.deleteAt != null) {
+    if (checkName && checkName.deleteAt != null) {
       checkName.deleteAt = new Date();
       return await this.FavoriteRepository.save(checkName);
     }
@@ -102,22 +102,21 @@ export class FavoriteService {
     subSubCategoryId: number,
     favoriteId: number,
   ) {
-    const subCate = await this.subSubCategoryService.findOneSubSubCategory(
+    const subSubCategory = await this.subSubCategoryService.findOneSubSubCategory(
       categoryId,
       subCategoryId,
       subSubCategoryId,
     );
-    if (!subCate) {
+    if (!subSubCategory) {
       throw new HttpException(
         '해당하는 카테고리가 존재하지 않습니다',
         HttpStatus.NOT_FOUND,
       );
     }
     //이 서브 카테고리를 사용해 검색
-    const findFav = await this.FavoriteRepository.findOne({
-      where: { subSubCategory: subCate, favoriteId },
+    return await this.FavoriteRepository.findOne({
+      where: { favoriteId },
     });
-    return findFav;
   }
 
   async updateFavoriteService(

@@ -25,7 +25,14 @@ export class CommentService {
     user: User,
   ): Promise<Comment> {
     //먼저 포스트 아이디로 포스트를 찾는다
-    const post = await this.postService.findOnePostService(+categoryId, +subCategoryId, +subSubCategoryId, +favoriteId, +postId, user)
+    const post = await this.postService.findOnePostService(
+      +categoryId,
+      +subCategoryId,
+      +subSubCategoryId,
+      +favoriteId,
+      +postId,
+      user,
+    );
     const { content, anonymous } = createCommentDto;
     if (!post) {
       throw new HttpException(
@@ -36,8 +43,8 @@ export class CommentService {
     const comment = this.CommentRepository.create({
       content,
       user,
-      post:{postId: post.postId},
-      ...(anonymous && { anonymous }),
+      post:{postId: +post.postId},
+      anonymous,
     });
     return await this.CommentRepository.save(comment);
   }

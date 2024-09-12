@@ -26,7 +26,7 @@ export class User {
   @Column({ unique: true })
   email: string;
 
-  @Column('varchar', { length: 255, select: false })
+  @Column('varchar', { length: 255 })
   password: string;
 
   @Column({ unique: true })
@@ -38,6 +38,7 @@ export class User {
     default: userType.MEMBER,
   })
   status: userType;
+
 
   @CreateDateColumn()
   createdAt: Date;
@@ -60,7 +61,7 @@ export class User {
   @OneToMany(() => Like, (like) => like.user)
   likes: Like[];
 
-  @Column()
+  @Column({ nullable: true })
   profilePic: string;
 
   // 친구 관계

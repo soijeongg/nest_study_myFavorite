@@ -35,17 +35,16 @@ export class SubCategoriesService {
     const findSubCategory = await this.subCategoriesRepostiory.findOne({
         where:{subCategoryName: subCategoryName, Category: { categoriesId: categoryId }}
     });
-    if(findSubCategory.deleteAt != null) {
+    if(findSubCategory  && findSubCategory.deleteAt != null) {
       findSubCategory.deleteAt = null;
     return await this.subCategoriesRepostiory.save(findSubCategory)
     }
-    if (!findSubCategory) {
+    if (findSubCategory) {
       throw new HttpException(
         '이미 존재하는 서브 카테고리 입니다',
         HttpStatus.BAD_REQUEST,
       );
     }
-
     const newSubCagtegory = await this.subCategoriesRepostiory.create({
       subCategoryName: subCategoryName,
       Category: { categoriesId: categoryId },
@@ -187,7 +186,7 @@ export class SubCategoriesService {
       );
     }
     //서브 카테고리를 찾는다
-   return await this.subCategoriesRepostiory.findOne({
+     return await this.subCategoriesRepostiory.findOne({
       where: {
         subcategoriesId: subCategoryId,
         deleteAt: null,

@@ -6,7 +6,7 @@ import { CreateSubCategoryDto } from './dto/create-sub-category.dto';
 import { UpdateSubCategoryDto } from './dto/update-sub-category.dto';
 import { User } from 'src/user/entities/user.entities';
 
-@Controller('categories/:categoryId/sub-categories')
+@Controller('categories/:categoryId/subCategories')
 export class SubCategoriesController {
   constructor(private readonly subCategoriesService: SubCategoriesService) {}
 

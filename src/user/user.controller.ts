@@ -32,18 +32,22 @@ export class UserController {
   constructor(private readonly userService: UserService) {}
 
   @Get()
-  @UseGuards(adminGuard)
-  async findAllController(): Promise<User[]> {
-    return this.userService.getAllService();
+  @UseGuards(JwtAuthGuard)
+  async findAllController(
+    @Req() req: Request
+  ) {
+    const user = req.user as User;
+    return this.userService.getAllService(user);
   }
 
   @Post()
   @UseInterceptors(FileInterceptor('profilePic'))
   async createUserController(
     @Body() createDto: createUserDTO,
-    @UploadedFile() profilePic: Express.Multer.File,
+    @UploadedFile() profilePic?: Express.Multer.File,
   ): Promise<User> {
-    return this.userService.createUserService(createDto, profilePic.filename);
+   const file = profilePic ? profilePic.filename : null;
+    return this.userService.createUserService(createDto, file);
   }
 
   @Post('/login')

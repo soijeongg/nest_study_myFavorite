@@ -29,7 +29,7 @@ export class Favorite {
   @UpdateDateColumn()
   updatedAt: Date;
 
-  @DeleteDateColumn()
+  @DeleteDateColumn({ nullable: true })
   deleteAt: Date;
 
   @OneToMany(() => userFavorite, (userFavorite) => userFavorite.favorite)

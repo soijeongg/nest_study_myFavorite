@@ -19,7 +19,7 @@ import { User } from '../user/entities/user.entities';
 import { JwtAuthGuard } from '../Guard/jwt.guard';
 
 @Controller(
-  'categories/:categoryId/sub-categories/:subCategoryId/subSubCategory/:subCategoryId/favorite',
+  'categories/:categoryId/subCategories/:subCategoryId/subSubCategories/:subSubCategoryId/favorite',
 )
 export class FavoriteController {
   constructor(private readonly favoriteService: FavoriteService) {}
@@ -51,6 +51,16 @@ export class FavoriteController {
     @Param('subSubCategoryId') subSubCategoryId: string,
   ) {
     return await this.favoriteService.getAllFavoriteService(+categoryId, +subCategoryId, +subSubCategoryId)
+  }
+
+  @Get(':FavoriteId')
+  async getFavoeiteController(
+    @Param('categoryId') categoryId: string,
+    @Param('subCategoryId') subCategoryId: string,
+    @Param('subSubCategoryId') subSubCategoryId: string,
+    @Param('FavoriteId') FavoriteId: string,
+  ) {
+    return await this.favoriteService.getOneFavorite(+categoryId, +subCategoryId, +subSubCategoryId, +FavoriteId)
   }
 
   @Put(':FavoriteId')

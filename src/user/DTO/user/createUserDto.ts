@@ -34,7 +34,5 @@ export class createUserDTO {
   @ApiProperty({ required: true, example: 'username' })
   username: string;
 
-  status: userType;
-
-  profilePic: string;
+  status?: userType;
 }

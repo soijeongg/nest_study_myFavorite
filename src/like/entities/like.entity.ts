@@ -11,7 +11,7 @@ export class Like {
   @ManyToOne(() => Posts, (post) => post.likes)
   post: Posts;
 
-  @ManyToOne(() => Comment, (comment) => comment.likes)
+  @ManyToOne(() => Comment, (comment) => comment.likes, { nullable: true })
   comment: Comment;
 
   @ManyToOne(() => User, (user) => user.likes)

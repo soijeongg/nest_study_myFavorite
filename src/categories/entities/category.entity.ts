@@ -12,7 +12,7 @@ export class Category {
   @CreateDateColumn()
   createAt: Date;
 
-  @DeleteDateColumn()
+  @DeleteDateColumn({ nullable: true })
   deleteAt: Date;
 
   @OneToMany(() => SubCategory, (subCategories) => subCategories.Category)

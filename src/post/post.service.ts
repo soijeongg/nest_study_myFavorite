@@ -119,59 +119,53 @@ export class PostService  {
       subSubCategoryId,
       favoriteId,
     );
+    
     if (!findFav) {
-      throw new HttpException(
-        '존재하지 않는 최애 입니다',
-        HttpStatus.NOT_FOUND,
-      );
+      throw new HttpException('존재하지 않는 최애입니다.', HttpStatus.NOT_FOUND);
     }
-    //1. 먼저 유저 타입이 관리자일경우 익명 상관없이 반환
-    if(user.status ==userType.ADMIN){
-      const findPost = await this.postRepository.findOne({
-        where:{favorite: findFav, deleteAt: null, postId: postId}
-      });
-      if (!findPost) {
-        throw new HttpException(
-          '게시물을 찾을 수 없습니다.',
-          HttpStatus.NOT_FOUND,
-        );
-      }
+  
+    // 공통 포스트 조회 로직
+    const findPost = await this.postRepository.findOne({
+      where: { favorite: findFav, deleteAt: null, postId },
+      relations: ['comments', 'user'], // 관련된 유저와 댓글을 포함하여 가져옴
+    });
+
+    if (!findPost) {
+      throw new HttpException('게시물을 찾을 수 없습니다.', HttpStatus.NOT_FOUND);
+    }
+    // 공통 댓글 처리 함수
+      const comments = findPost.comments ? findPost.comments.map((comment) => ({
+          commentId: comment.commentId,
+          content: comment.content,
+          anonymous: comment.anonymous,
+          user: comment.anonymous ? '익명' : comment.user.username, // 익명 여부에 따른 유저 정보 처리
+        }))
+      : [];
+
+    if (user.status === userType.ADMIN) {
       return {
         postId: findPost.postId,
         postTitle: findPost.title,
         description: findPost.description,
-        PostType: findPost.postType,
-        user: findPost.user.username,
-        Comments: findPost.comments.map((comment) => ({
-          commentId: comment.commentId,
-          content: comment.content,
-          user: comment.user.username,
-        })),
+        postType: findPost.postType,
+        user: findPost.user.username, // 관리자는 유저 이름을 항상 볼 수 있음
+        comments: comments,
       };
     }
-    //관리자가 아닌 경우  포스트 익명인 경우 확인
-    const findPostNormal = await this.postRepository.findOne({
-      where:{favorite: findFav, deleteAt: null, postId: postId}
-    });
-    if (!findPostNormal) {
-      throw new HttpException(
-        '게시물을 찾을 수 없습니다.',
-        HttpStatus.NOT_FOUND,
-      );
-    }
-    const postUser = findPostNormal.anonymous ? null : findPostNormal.user.username;
-    const comments = findPostNormal.comments.map((comment) => ({
+
+    const postUser = findPost.anonymous ? '익명' : findPost.user.username;
+    const normalComments = comments.map((comment) => ({
       commentId: comment.commentId,
       content: comment.content,
-      user: comment.anonymous ? null : comment.user.username,
+      user: comment.anonymous ? '익명' : comment.user,
     }));
     return {
-      postId: findPostNormal.postId,
-      postTitle: findPostNormal.title,
-      description: findPostNormal.description,
-      postType: findPostNormal.postType,
+      postId: findPost.postId,
+      postTitle: findPost.title,
+      description: findPost.description,
+      postType: findPost.postType,
       user: postUser,
-      comments: Comment,
+      comments: normalComments,
     };
   }
 

@@ -26,7 +26,7 @@ export class SubSubCategoriesService {
       throw new HttpException('권한이 없습니다', HttpStatus.BAD_REQUEST);
     }
     const { subSubCategoryName } = createSubSubCategoryDto;
-    const SubCategory = await this.subCategoriesService.findOne(
+    const SubCategory = await this.subCategoriesService.findOneSubCategory(
       categoryId,
       subCategoryId,
     );
@@ -41,7 +41,7 @@ export class SubSubCategoriesService {
       where: { subSubCategoryName },
     });
     //만약 있는데 삭제 되었다면 deleteAt을 null로 바꾸기 있는데 deleteAt이 null이라면 에러
-    if (checkName.deleteAt != null) {
+    if (checkName && checkName.deleteAt != null) {
       checkName.deleteAt = null;
       return await this.subSubCategoryRepository.save(checkName);
     }

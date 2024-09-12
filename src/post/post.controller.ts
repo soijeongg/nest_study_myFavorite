@@ -24,7 +24,7 @@ import { Posts } from './entities/post.entities';
 import { IpostController } from './interface/IpostController';
 
 @Controller(
-  'categories/:categoryId/subCategories/:subCategoryId/subSubCategory/:subSubCategoryId/favorite/:FavoriteId/posts'
+  'categories/:categoryId/subCategories/:subCategoryId/subSubCategories/:subSubCategoryId/favorite/:FavoriteId/posts'
 )
 export class PostController {
   constructor(private readonly postService: PostService) {}

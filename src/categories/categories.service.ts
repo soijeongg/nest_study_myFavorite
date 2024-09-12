@@ -25,12 +25,12 @@ export class CategoriesService {
       where: { categoriesName },
     });
     //이미 있지만 삭제 된 경우 deleteAt만 다시 null로 바꾼다
-    if (checkCategoriesName.deleteAt != null) {
+    if (checkCategoriesName && checkCategoriesName.deleteAt !== null) {
       checkCategoriesName.deleteAt = null;
       return await this.categoriesRepostiory.save(checkCategoriesName);
     }
     //delteAt이  null 이면 지금 중복
-    if (!checkCategoriesName) {
+    if (checkCategoriesName) {
       throw new HttpException('헤딩 카테고리가 이미 존재합니다 ', HttpStatus.BAD_REQUEST)
     }
     const newCategories = await this.categoriesRepostiory.create({

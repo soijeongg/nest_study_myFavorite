@@ -7,7 +7,7 @@ import { Request, Response } from 'express';
 import { User } from 'src/user/entities/user.entities';
 
 @Controller(
-  'categories/:categoryId/sub-categories/:subCategoryId/subSubCategory',
+  'categories/:categoryId/subCategories/:subCategoryId/subSubCategories',
 )
 export class SubSubCategoriesController {
   constructor(
