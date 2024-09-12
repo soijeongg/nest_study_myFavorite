@@ -1,107 +1,222 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { CreateFriendDto } from './dto/create-friend.dto';
 import { UpdateFriendDto } from './dto/update-friend.dto';
-import { IfriendService } from './interface/IfriendService';
-import { Friend } from './entities/friendRequests.entity';
+import { FriendRequest } from './entities/friendRequests.entity';
+import { Friend } from './entities/friend.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { DeleteResult, Repository } from 'typeorm';
+import { CreateFriendRequestDto } from './dto/createFriendRequest.dto';
 import { UserService } from '../user/user.service';
 import { User } from '../user/entities/user.entities';
+import { userFriends } from './entities/userFriends.entity';
+import { statusType } from './entities/friendRequests.entity';
 
 @Injectable()
-export class FriendService implements IfriendService {
+export class FriendService {
   constructor(
     @InjectRepository(Friend) private friendRepository: Repository<Friend>,
+    @InjectRepository(userFriends)
+    private userFriendRepository: Repository<userFriends>,
+    @InjectRepository(FriendRequest)
+    private friendRequestRepository: Repository<FriendRequest>,
+    @InjectRepository(User)
+    private userRepository: Repository<User>,
     private userService: UserService,
   ) {}
-  async createFriendService(createDto: CreateFriendDto, user: User): Promise<Friend> {
-    const { recipientName } = createDto;
-    const recipient = await this.userService.getOtherUserService(recipientName);
-    const friend = await this.friendRepository.create({
-      recipient,
-      requester: user,
+  //TODO: 친구 요청을 보낸다, 친구 요청 테이블에 저장
+  async createFriendService(createDto: CreateFriendRequestDto, user: User) {
+    const { userId } = createDto;
+    //유저 아이디가 자신이 아닌지 확인
+    if (user.userId == userId) {
+      throw new HttpException(
+        '자기자신에게는 친구 신청을 보낼 수 없습니다',
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+    const recipient = await this.userRepository.findOne({ where: { userId } });
+    if (!recipient) {
+      throw new HttpException('존재하지 않는 유저에게 친구 신청을 보낼 수 없습니다.', HttpStatus.BAD_REQUEST);
+    }
+    const findRequestReq = await this.friendRequestRepository.findOne({
+      where: { requester: user, recipient },
+    });
+    const findRequestRes = await this.friendRequestRepository.findOne({
+      where: { requester: recipient, recipient: user },
+    });
+    //이미 친구 신청에 있는지 확인하기(자신이 보낸거 확인, 남이 보낸거 확인)
+    if (findRequestReq || findRequestRes) {
+      //친구 신청이 있는데 이미 삭제되어 reject되고 deleteAt이 날짜인 경우 다시 null과 펜딩으로 바꾸기
+      if (findRequestReq && findRequestReq.deleteAt != null) {
+        findRequestReq.deleteAt = null;
+        findRequestReq.status = statusType.PENDING;
+        return await this.friendRequestRepository.save(findRequestReq);
+      }
+      if (findRequestRes && findRequestRes.deleteAt != null) {
+        findRequestRes.deleteAt = null;
+        findRequestRes.status = statusType.PENDING;
+        return await this.friendRequestRepository.save(findRequestRes);
+      }
+      // 이미 존재하는 친구 요청이 있으므로 예외 처리
+      throw new HttpException(
+        '이미 친구 신청이 존재합니다.',
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+    const newFriendRequest = this.friendRequestRepository.create({
+      requester: user, // 요청을 보낸 유저
+      recipient: { userId }, // 요청을 받는 유저
+    });
+    return await this.friendRequestRepository.save(newFriendRequest);
+  }
+
+  //친구 신청 조회(내가 받은것)
+
+  async getReceivedFriendRequests(user: User) {
+    // 내가 받은 친구 요청을 조회 (recipient가 나인 경우)
+    const receivedRequests = await this.friendRequestRepository.find({
+      where: { recipient: user, deleteAt: null }, // 삭제되지 않은 친구 요청만 조회
+      relations: ['requester'], // 친구 요청을 보낸 유저 정보 포함
+    });
+    return receivedRequests.map((request) => ({
+      id: request.friendRequestId,
+      requesterName: request.requester.username, // 친구 요청을 보낸 사람의 이름
+      status: request.status,
+      createdAt: request.createdAt,
+    }));
+  }
+  //친구 신청 조회(내가 한것)
+
+  async getSentFriendRequests(user: User) {
+    // 내가 보낸 친구 요청을 조회 (requester가 나인 경우)
+    const sentRequests = await this.friendRequestRepository.find({
+      where: { requester: user, deleteAt: null }, // 삭제되지 않은 친구 요청만 조회
+      relations: ['recipient'], // 친구 요청을 받은 유저 정보 포함
+    });
+    return sentRequests.map((request) => ({
+      id: request.friendRequestId,
+      recipientName: request.recipient.username, // 친구 요청을 받은 사람의 이름
+      status: request.status,
+      createdAt: request.createdAt,
+    }));
+  }
+  //친구신청 수락
+
+  async acceptedFriendService(friendRequestId: number, user: User) {
+    //친구신청 아이디를 사용해 친구 신청이있는지 확인한다, 있으면 status바꾸로 userFriend에 넣는다
+    //친구엔티티에 저장한다
+    const findFriendRequest = await this.friendRequestRepository.findOne({
+      where: {
+        friendRequestId: friendRequestId,
+        deleteAt: null,
+      },
+    });
+    if (!findFriendRequest) {
+      throw new HttpException('친구 신청이 없습니다', HttpStatus.BAD_REQUEST);
+    }
+    if (findFriendRequest.recipient != user) {
+      throw new HttpException(
+        '자신의 친구 신청이 아닙니다',
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+    if (findFriendRequest.status != statusType.PENDING) {
+      throw new HttpException('유효하지 않는 친구신청입니다', HttpStatus.BAD_REQUEST)
+    }
+    findFriendRequest.status = statusType.ACCEPTED;
+    await this.friendRequestRepository.save(findFriendRequest);
+
+    const newFriendRelationship = this.userFriendRepository.create({
+      user: findFriendRequest.requester,
+      friend: findFriendRequest.recipient,
+    });
+    await this.userFriendRepository.save(newFriendRelationship);
+
+    const friend = this.friendRepository.create({
+      userFriends: newFriendRelationship,
     });
     return await this.friendRepository.save(friend);
   }
 
-  async updateFriendService(updateDto: UpdateFriendDto, user: User): Promise<Friend> {
-    const { recipientName, status } = updateDto;
-    if (status !== 'accepted' && status !== 'rejected') {
-      throw new HttpException('잘못된 상태 입니다', HttpStatus.BAD_REQUEST);
-    }
-    // 해당 요청자를 찾습니다.
-    const recipient = await this.userService.getOtherUserService(recipientName);
+  //TODO: 친구 신청 거절 및 친구신청 삭제 친구 신청을 찾고 status가 pending인지 확인,
 
-    // 친구 관계를 업데이트합니다.
-    const friend = await this.friendRepository.findOne({
-      where: { requester: user, recipient: recipient },
-    });
-    if (!friend) {
-      throw new HttpException(
-        '친구 관계를 찾을 수 없습니다',
-        HttpStatus.NOT_FOUND,
-      );
-    }
-
-    friend.status = status;
-    return this.friendRepository.save(friend);
-  }
-
-  async getAllFriendService(username: string): Promise<Friend[]> {
-    const user = await this.userService.getOtherUserService(username);
-    return await this.friendRepository.find({
-      where: [{ recipient: user }, { requester: user }],
-    });
-  }
-
-  async deleteFriendService(user: User, username: string): Promise<boolean> {
-    const friendUser = await this.userService.getOtherUserService(username);
-
-    if (!friendUser) {
-      throw new HttpException('친구를 찾을 수 없습니다', HttpStatus.NOT_FOUND);
-    }
-    const friend = await this.friendRepository.findOne({
+  async rejectedFriendRequestService(friendRequestId: number, user: User) {
+    // 친구 요청을 받았거나 보냈는지 확인
+    const findFriendRequest = await this.friendRequestRepository.findOne({
       where: [
-        { requester: user, recipient: friendUser },
-        { requester: friendUser, recipient: user },
+        { friendRequestId: friendRequestId, deleteAt: null, recipient: user },
+        { friendRequestId: friendRequestId, deleteAt: null, requester: user },
       ],
     });
-
-    if (!friend) {
-      throw new HttpException(
-        '친구 관계를 찾을 수 없습니다',
-        HttpStatus.NOT_FOUND,
-      );
+    // 친구 요청이 존재하지 않으면 에러 처리
+    if (!findFriendRequest) {
+      throw new HttpException('해당하는 친구 신청이 없습니다.', HttpStatus.NOT_FOUND);
     }
-    const deleteResult: DeleteResult = await this.friendRepository.delete(
-      friend.id,
-    );
-    return deleteResult.affected > 0;
+    // 친구 요청의 상태가 PENDING인지 확인
+    if (findFriendRequest.status !== statusType.PENDING) {
+      throw new HttpException('유효하지 않은 친구 신청 상태입니다.', HttpStatus.BAD_REQUEST);
+    }
+
+    // 친구 요청을 REJECTED로 변경하고 삭제 시간 기록
+    findFriendRequest.status = statusType.REJECTED;
+    findFriendRequest.deleteAt = new Date();
+
+    // 변경된 친구 요청을 저장
+    return await this.friendRequestRepository.save(findFriendRequest);
   }
 
-  async searchFriendService(
-    searchTerm: string,
-    username: string,
-  ): Promise<Friend[]> {
-    const user = await this.userService.getOtherUserService(username);
-
-    if (!user) {
-      throw new HttpException('유저를 찾을 수 없습니다', HttpStatus.NOT_FOUND);
-    }
-
-    // 검색어에 해당하는 친구 관계를 찾습니다.
-    const friends = await this.friendRepository.find({
-      where: [
-        { requester: user, recipient: { username: searchTerm } },
-        { recipient: user, requester: { username: searchTerm } },
-      ],
-      relations: ['requester', 'recipient'],
+  //TODO: 친구 조회, userFrined에 들어가서 유저로 조히
+  async findFriendService(user: User) {
+    const userFriends = await this.userFriendRepository.find({
+      where: { user },
+      relations: ['friends', 'user'],
     });
-
-    if (friends.length === 0) {
-      throw new HttpException('친구를 찾을 수 없습니다', HttpStatus.NOT_FOUND);
-    }
-
+    const friends = userFriends.map((userFriend) => ({
+      userName: userFriend.user.username,
+      createdAt: userFriend.createAt,
+    }));
     return friends;
+  }
+
+  //TODO: 친구 삭제
+  async deleteFriendService(friendId: number, user: User) {
+    const findFriend = await this.friendRepository.findOne({
+      where: { friendId: friendId, deletedAt: null },
+    });
+    if (findFriend) {
+      findFriend.deletedAt = new Date(); // Friend 엔티티도 논리 삭제 처리
+      await this.friendRepository.save(findFriend);
+    }
+    if (!findFriend) {
+     throw new HttpException('친구가 존재하지 않습니다', HttpStatus.BAD_REQUEST)
+    }
+    // 1. 유저와 친구 ID를 사용해 친구 관계를 UserFriends 테이블에서 찾음
+    const findFriendRelationship = await this.userFriendRepository.findOne({
+      where: [
+        { user: user, friend: { friendId: friendId }, deletedAt: null }, // 유저가 친구인 경우
+        { user: { userId: friendId }, friend: user, deletedAt: null }, // 유저가 친구로 등록된 경우
+      ],
+      relations: ['friend', 'user'],
+    });
+
+    if (!findFriendRelationship) {
+      throw new HttpException('존재하지 않는 친구 관계입니다.', HttpStatus.NOT_FOUND);
+    }
+
+    // userFriend에서도 삭제
+    findFriendRelationship.deletedAt = new Date();
+    await this.userFriendRepository.save(findFriendRelationship);
+
+    // FriendRequest 에서 삭제
+    const findFriendRequest = await this.friendRequestRepository.findOne({
+      where: [
+        { requester: user, recipient: { userId: findFriendRelationship.user.userId  }, deleteAt: null }, // 내가 보낸 친구 요청
+        { requester: { userId: findFriendRelationship.user.userId }, recipient: user, deleteAt: null }, // 내가 받은 친구 요청
+      ],
+    });
+    if (findFriendRequest) {
+      findFriendRequest.status = statusType.REJECTED; // 친구 요청 상태를 REJECTED로 변경
+      findFriendRequest.deleteAt = new Date(); // 친구 요청을 논리적으로 삭제
+      await this.friendRequestRepository.save(findFriendRequest);
+    }
   }
 }

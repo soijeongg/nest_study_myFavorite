@@ -7,23 +7,29 @@ import {
   DeleteDateColumn,
 } from 'typeorm';
 import { User } from '../../user/entities/user.entities';
+
+export enum statusType {
+  PENDING = 'pending',
+  ACCEPTED = 'accepted',
+  REJECTED = 'rejected',
+}
 @Entity()
 export class FriendRequest {
   @PrimaryGeneratedColumn()
-  id: number;
+  friendRequestId: number;
 
-  @ManyToOne(() => User, (user) => user)
+  @ManyToOne(() => User, (user) => user.sentFriendRequests)
   requester: User; // 친구신청을 한 사람
 
-  @ManyToOne(() => User, (user) => user)
+  @ManyToOne(() => User, (user) => user.receivedFriendRequests)
   recipient: User; //친구 신청을 받은 사람
 
   @Column({
     type: 'enum',
-    enum: ['pending', 'accepted', 'rejected'],
-    default: 'pending',
+    enum: statusType,
+    default: statusType.PENDING,
   })
-  status: 'pending' | 'accepted' | 'rejected'; //신청중, 수락, 거절
+  status: statusType;
 
   @CreateDateColumn()
   createdAt: Date;

@@ -13,7 +13,6 @@ import {
 } from '@nestjs/common';
 import { FavoriteService } from './favorite.service';
 import { Request, Response } from 'express';
-import { FileInterceptor } from '@nestjs/platform-express';
 import { CreateFavoriteDto } from './dto/create-favorite.dto';
 import { UpdateFavoriteDto } from './dto/update-favorite.dto';
 import { User } from '../user/entities/user.entities';
@@ -36,7 +35,13 @@ export class FavoriteController {
   ) {
     const user = req.user as User;
     const status = user.status;
-    return await this.favoriteService.createFavoriteService(createFavoriteDto, +categoryId, +subCategoryId, +subSubCategoryId, status);
+    return await this.favoriteService.createFavoriteService(
+      createFavoriteDto,
+      +categoryId,
+      +subCategoryId,
+      +subSubCategoryId,
+      status,
+    );
   }
 
   @Get()

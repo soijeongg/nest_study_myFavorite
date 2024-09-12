@@ -63,10 +63,14 @@ export class User {
   @Column()
   profilePic: string;
 
-  //한명의 유저는 여러 유저에게 친구 신청을 할 수 있다
-  @OneToMany(() => FriendRequest, (FriendRequest) => FriendRequest.requester)
+  // 친구 관계
+  @OneToMany(() => userFriends, (userFriends) => userFriends.user)
+  friends: userFriends[];
+
+  @OneToMany(() => FriendRequest, (friendRequest) => friendRequest.requester)
   sentFriendRequests: FriendRequest[];
 
-  @OneToMany(() => userFriends, (userFriends) => userFriends.friend)
-  friends: userFriends[];
+  // 내가 받은 친구 요청들
+  @OneToMany(() => FriendRequest, (friendRequest) => friendRequest.recipient)
+  receivedFriendRequests: FriendRequest[];
 }

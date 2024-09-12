@@ -14,66 +14,83 @@ import {
 import { FriendService } from './friend.service';
 import { CreateFriendDto } from './dto/create-friend.dto';
 import { UpdateFriendDto } from './dto/update-friend.dto';
-import { IfriendController } from './interface/IfriendController';
 import { Request, Response } from 'express';
-import { Friend } from './entities/friendRequests.entity';
+import { FriendRequest } from './entities/friendRequests.entity';
+import { Friend } from './entities/friend.entity';
 import { JwtAuthGuard } from '../Guard/jwt.guard';
 import { User } from '../user/entities/user.entities';
+import { CreateFriendRequestDto } from './dto/createFriendRequest.dto';
 
 @Controller('friend')
-export class FriendController implements IfriendController {
+export class FriendController {
   constructor(private readonly friendService: FriendService) {}
 
   @UseGuards(JwtAuthGuard)
   @Post()
   async createFriendController(
-    @Body() createDto: CreateFriendDto,
+    @Body() createDto: CreateFriendRequestDto,
     @Req() req: Request,
-  ): Promise<Friend> {
+  ) {
     const user = req.user as User;
     return await this.friendService.createFriendService(createDto, user);
   }
 
-  @Get(':username')
-  async getAllFriendController(
-    @Body('username') username: string,
-  ): Promise<Friend[]> {
-    return await this.friendService.getAllFriendService(username);
+  @Get('friend/receive')
+  @UseGuards(JwtAuthGuard)
+  async getReciveRequestController(@Req() req: Request) {
+    const user = req.user as User;
+    return await this.friendService.getReceivedFriendRequests(user);
+  }
+  @Get('friend/sent')
+  @UseGuards(JwtAuthGuard)
+  async getSentRequestController(@Req() req: Request) {
+    const user = req.user as User;
+    return await this.friendService.getSentFriendRequests(user);
   }
 
   @UseGuards(JwtAuthGuard)
-  @Put()
-  async updateFriendController(
+  @Put(':/Request/friendRequestId')
+  async acceptFriendController(
+    @Param('friendRequestId') friendRequestId: string,
     updateDto: UpdateFriendDto,
     req: Request,
   ): Promise<Friend> {
     const user = req.user as User;
-    return await this.friendService.updateFriendService(updateDto, user);
+    return await this.friendService.acceptedFriendService(+friendRequestId, user);
   }
 
   @UseGuards(JwtAuthGuard)
-  @Delete(':username')
-  async deleteFriendController(
-    @Param('username') username: string,
+  @Delete(':/Request/friendRequestId')
+  async deleteFriendRequestController(
+    @Param('friendRequestId') friendRequestId: string,
     @Req() req: Request,
     @Res() res: Response,
-  ): Promise<void> {
+  ) {
     const user = req.user as User;
-    const result = await this.friendService.deleteFriendService(user, username);
-    if (result) {
-      res.status(HttpStatus.OK).json({ message: '삭제가 완료되었습니다' });
-    } else {
-      res
-        .status(HttpStatus.NOT_FOUND)
-        .json({ message: '친구 관계를 찾을 수 없습니다' });
-    }
+    await this.friendService.rejectedFriendRequestService(+friendRequestId, user);
+    return res
+      .status(HttpStatus.OK)
+      .json({message:"정상적으로 삭제되었습니다"})
   }
 
-  @Get(':username/search')
+  @Delete(':friendId')
+  @UseGuards(JwtAuthGuard)
   async searchFriendController(
-    @Body() searchTerm: string,
-    @Param('username') username: string,
-  ): Promise<Friend[]> {
-    return await this.friendService.searchFriendService(searchTerm, username);
+    @Param('friendId') friendId: string,
+    @Req() req: Request,
+    @Res() res: Response,
+  ) {
+    const user = req.user as User;
+    await this.friendService.deleteFriendService(+friendId, user);
+    return res
+      .status(HttpStatus.OK)
+      .json({message:"정상적으로 삭제되었습니다"})
+  }
+
+  @Get()
+  @UseGuards(JwtAuthGuard)
+  async findFriendController(@Req() req: Request) {
+    const user = req.user as User;
+    return await this.friendService.findFriendService(user);
   }
 }
