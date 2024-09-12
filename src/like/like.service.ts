@@ -26,12 +26,21 @@ export class LikeService {
     postId: number,
     user: User,
   ): Promise<Like> {
-    const post = await this.postService.findOnePostService(categoryId, subCategoryId, subSubCategoryId, favoriteId, postId, user)
+    const post = await this.postService.findOnePostForCommentService(categoryId, subCategoryId, subSubCategoryId, favoriteId, postId)
     if (!post) {
       throw new HttpException(
         '해당하는 포스트가 없습니다',
         HttpStatus.NOT_FOUND,
       );
+    }
+    const findlike = await this.LikeRepository.findOne({
+      where: {
+        post: { postId },
+        user,
+      },
+    });
+    if (findlike) {
+      throw new HttpException('이미 좋아요한 댓글 입니다', HttpStatus.NOT_FOUND);
     }
 
     const newLike = await this.LikeRepository.create({
@@ -78,7 +87,15 @@ export class LikeService {
     commentId: number,
     user: User,
   ): Promise<Like> {
-    const comment = await this.commentService.findCommentService(categoryId, subCategoryId, subSubCategoryId, favoriteId, postId, commentId, user)
+    const comment = await this.commentService.findCommentService(
+      categoryId,
+      subCategoryId,
+      subSubCategoryId,
+      favoriteId,
+      postId,
+      commentId,
+      user,
+    );
     if (!comment) {
       throw new HttpException('해당하는 댓글이 없습니다', HttpStatus.NOT_FOUND);
     }

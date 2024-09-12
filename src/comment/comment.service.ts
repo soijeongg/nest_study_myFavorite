@@ -33,6 +33,7 @@ export class CommentService {
       +postId,
       user,
     );
+    console.log(post);
     const { content, anonymous } = createCommentDto;
     if (!post) {
       throw new HttpException(
@@ -137,7 +138,7 @@ export class CommentService {
     user: User,
   ): Promise<Comment> {
     //포스트를 검사하고 그 후 있다면 유저가 같은지 확인한다
-    const post = await this.postService.findOnePostService(+categoryId, +subCategoryId, +subSubCategoryId, +favoriteId, +postId, user);
+    const post = await this.postService.findOnePostForCommentService(+categoryId, +subCategoryId, +subSubCategoryId, +favoriteId, +postId);
     if (!post) {
       throw new HttpException(
         '해당하는 포스트가 없습니다',
@@ -146,7 +147,7 @@ export class CommentService {
     }
     //코멘트를 검사한다
     const comment = await this.CommentRepository.findOne({
-      where: { commentId, post:{postId}, deleteAt: null},
+      where: { commentId, post:{postId: postId}, deleteAt: null},
     });
     if (!comment) {
       throw new HttpException(
@@ -155,9 +156,6 @@ export class CommentService {
       );
     }
     //유저가 맞는지 검사한다
-    if (comment.user != user) {
-      throw new HttpException('자신의 댓글이 아닙니다', HttpStatus.BAD_REQUEST);
-    }
     return comment;
   }
 }

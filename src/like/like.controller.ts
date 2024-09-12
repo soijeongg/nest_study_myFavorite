@@ -7,13 +7,13 @@ import { Request, Response } from 'express';
 import { User } from '../user/entities/user.entities';
 
 @Controller(
-  'categories/:categoryId/subCategories/:subCategoryId/subSubCategory/:subSubCategoryId/favorite/:FavoriteId/posts')
+  'categories/:categoryId/subCategories/:subCategoryId/subSubCategories/:subSubCategoryId/favorite/:FavoriteId/posts')
 export class LikeController {
   constructor(private readonly likeService: LikeService) {}
   //생성, 삭제,(포스트) 생성, 삭제9포스트)
 
   @UseGuards(JwtAuthGuard)
-  @Post(':postId/like')
+  @Get(':postId/like')
   async createLikePostController(
     @Param('categoryId') categoryId: string,
     @Param('subCategoryId') subCategoryId: string,
@@ -40,7 +40,7 @@ export class LikeController {
     return await this.likeService.deleteLikeService(+categoryId, +subCategoryId, +subSubCategoryId, +FavoriteId, +postId, user)
   }
   @UseGuards(JwtAuthGuard)
-  @Post(':postId/comments/:commentId/like')
+  @Get(':postId/comments/:commentId/like')
   async createLikeCommentController(
     @Param('categoryId') categoryId: string,
     @Param('subCategoryId') subCategoryId: string,

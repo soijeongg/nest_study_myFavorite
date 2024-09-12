@@ -119,14 +119,13 @@ export class PostService  {
       subSubCategoryId,
       favoriteId,
     );
-    
+
     if (!findFav) {
       throw new HttpException('존재하지 않는 최애입니다.', HttpStatus.NOT_FOUND);
     }
-  
     // 공통 포스트 조회 로직
     const findPost = await this.postRepository.findOne({
-      where: { favorite: findFav, deleteAt: null, postId },
+      where: { favorite:{favoriteId: findFav.favoriteId}, deleteAt: null, postId },
       relations: ['comments', 'user'], // 관련된 유저와 댓글을 포함하여 가져옴
     });
 
@@ -255,4 +254,34 @@ export class PostService  {
       .limit(1)
       .getOne();
   }
+
+  async findOnePostForCommentService(
+    categoryId: number,
+    subCategoryId: number,
+    subSubCategoryId: number,
+    favoriteId: number,
+    postId: number,
+  ) {
+    const findFav = await this.favoriteService.getOneFavorite(
+      categoryId,
+      subCategoryId,
+      subSubCategoryId,
+      favoriteId,
+    );
+
+    if (!findFav) {
+      throw new HttpException('존재하지 않는 최애입니다.', HttpStatus.NOT_FOUND);
+    }
+    // 공통 포스트 조회 로직
+    const findPost = await this.postRepository.findOne({
+      where: { favorite:{favoriteId: findFav.favoriteId}, deleteAt: null, postId },
+      relations: ['comments', 'user'], // 관련된 유저와 댓글을 포함하여 가져옴
+    });
+
+    if (!findPost) {
+      throw new HttpException('게시물을 찾을 수 없습니다.', HttpStatus.NOT_FOUND);
+    }
+    return findFav
+}
+
 }

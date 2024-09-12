@@ -6,7 +6,7 @@ import { JwtAuthGuard } from '../Guard/jwt.guard';
 import { User } from '../user/entities/user.entities';
 import { Response, Request } from 'express';
 import { Comment } from './entities/comment.entity';
-@Controller('categories/:categoryId/subCategories/:subCategoryId/subSubCategories/:subSubCategoryId/favorite/:favoriteId/posts/:postId/comment')
+@Controller('categories/:categoryId/subCategories/:subCategoryId/subSubCategories/:subSubCategoryId/favorite/:FavoriteId/posts/:postId/comment')
 export class CommentController {
   constructor(private readonly commentService: CommentService) {}
 

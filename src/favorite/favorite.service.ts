@@ -103,10 +103,10 @@ export class FavoriteService {
     favoriteId: number,
   ) {
     const subSubCategory = await this.subSubCategoryService.findOneSubSubCategory(
-      categoryId,
-      subCategoryId,
-      subSubCategoryId,
-    );
+        categoryId,
+        subCategoryId,
+        subSubCategoryId,
+      );
     if (!subSubCategory) {
       throw new HttpException(
         '해당하는 카테고리가 존재하지 않습니다',
@@ -114,9 +114,10 @@ export class FavoriteService {
       );
     }
     //이 서브 카테고리를 사용해 검색
-    return await this.FavoriteRepository.findOne({
-      where: { favoriteId },
+    const fav = await this.FavoriteRepository.findOne({
+      where: { favoriteId, deleteAt: null },
     });
+    return fav;
   }
 
   async updateFavoriteService(
