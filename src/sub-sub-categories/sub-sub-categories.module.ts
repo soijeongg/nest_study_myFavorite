@@ -16,5 +16,6 @@ import { TokenBlacklist } from 'src/user/entities/tokenBlacklist';
   ],
   controllers: [SubSubCategoriesController],
   providers: [SubSubCategoriesService],
+  exports: [SubSubCategoriesService],
 })
 export class SubSubCategoriesModule {}

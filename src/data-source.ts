@@ -23,7 +23,7 @@ export const dataSourceOptions: TypeOrmModuleAsyncOptions = {
   imports: [ConfigModule], //ConfigModule를 import해서 환경변수 사용할수있게됨(로드)
   useFactory: async () => ({
     //설정객체를 동적으로 생성 configService를 주입받음
-    type: 'postgres',
+    type: 'mysql',
     host: configService.get<string>('TYPEORM_HOST'),
     port: configService.get<number>('TYPEORM_PORT'),
     username: configService.get<string>('TYPEORM_USERNAME'),

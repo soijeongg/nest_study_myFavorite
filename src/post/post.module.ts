@@ -13,6 +13,7 @@ import { MulterModule } from '@nestjs/platform-express';
 import { SubSubCategory } from 'src/sub-sub-categories/entities/sub-sub-category.entity';
 import { UserModule } from 'src/user/user.module';
 import { SubSubCategoriesModule } from 'src/sub-sub-categories/sub-sub-categories.module';
+import { FavoriteModule } from 'src/favorite/favorite.module';
 
 @Module({
   imports: [
@@ -22,6 +23,7 @@ import { SubSubCategoriesModule } from 'src/sub-sub-categories/sub-sub-categorie
     }),
     UserModule,
     SubSubCategoriesModule,
+    FavoriteModule,
   ],
   controllers: [PostController],
   providers: [PostService, JwtAuthGuard, UserService, JwtService],

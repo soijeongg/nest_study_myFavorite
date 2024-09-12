@@ -14,9 +14,10 @@ import { TokenBlacklist } from './entities/tokenBlacklist';
 import { MulterModule } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
 import { extname } from 'path';
+import { userFavorite } from './entities/userFavorite.entities';
 @Module({
   imports: [
-    TypeOrmModule.forFeature([User, TokenBlacklist]), // 1. User 엔티티에 대한 TypeORM 레포지토리를 모듈에 등록
+    TypeOrmModule.forFeature([User, TokenBlacklist, userFavorite]), // 1. User 엔티티에 대한 TypeORM 레포지토리를 모듈에 등록
     PassportModule.register({ defaultStrategy: 'jwt' }),
     JwtModule.registerAsync({
       // 2. 비동기 방식으로 JwtModule을 등록
