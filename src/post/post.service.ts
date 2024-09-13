@@ -281,7 +281,6 @@ export class PostService  {
     if (!findPost) {
       throw new HttpException('게시물을 찾을 수 없습니다.', HttpStatus.NOT_FOUND);
     }
-    return findFav
-}
-
+    return findPost;
+  }
 }

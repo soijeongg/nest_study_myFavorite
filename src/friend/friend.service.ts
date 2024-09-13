@@ -10,7 +10,7 @@ import { UserService } from '../user/user.service';
 import { User } from '../user/entities/user.entities';
 import { userFriends } from './entities/userFriends.entity';
 import { statusType } from './entities/friendRequests.entity';
-
+import { WebSocketGatewayGateway } from 'src/web-socket-gateway/web-socket-gateway.gateway';
 @Injectable()
 export class FriendService {
   constructor(
@@ -22,6 +22,7 @@ export class FriendService {
     @InjectRepository(User)
     private userRepository: Repository<User>,
     private userService: UserService,
+    private WebSocketGateway: WebSocketGatewayGateway,
   ) {}
   //TODO: 친구 요청을 보낸다, 친구 요청 테이블에 저장
   async createFriendService(createDto: CreateFriendRequestDto, user: User) {
@@ -66,7 +67,10 @@ export class FriendService {
       requester: user, // 요청을 보낸 유저
       recipient: { userId }, // 요청을 받는 유저
     });
-    return await this.friendRequestRepository.save(newFriendRequest);
+    const saveFriendRequest =
+      await this.friendRequestRepository.save(newFriendRequest);
+    this.WebSocketGateway.handleFriendRequestNotification(userId, user.username);
+    return saveFriendRequest;
   }
 
   //친구 신청 조회(내가 받은것)
@@ -107,7 +111,6 @@ export class FriendService {
     const findFriendRequest = await this.friendRequestRepository.findOne({
       where: {
         friendRequestId: friendRequestId,
-        deleteAt: null,
       },
     });
     if (!findFriendRequest) {
@@ -118,6 +121,12 @@ export class FriendService {
         '자신의 친구 신청이 아닙니다',
         HttpStatus.BAD_REQUEST,
       );
+    }
+    //이미 친구에 있지만 deleteAt이 날짜여서 삭제 된것을 다시 deleteAt을 null로 바꾸고 status를 accepted로
+    if (findFriendRequest.deleteAt != null) {
+      findFriendRequest.deleteAt = null;
+      findFriendRequest.status = statusType.ACCEPTED;
+      return await this.friendRepository.save(findFriendRequest);
     }
     if (findFriendRequest.status != statusType.PENDING) {
       throw new HttpException('유효하지 않는 친구신청입니다', HttpStatus.BAD_REQUEST)

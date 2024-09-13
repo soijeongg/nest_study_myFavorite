@@ -9,13 +9,14 @@ import { User } from '../user/entities/user.entities';
 import { Posts } from '../post/entities/post.entities';
 import { UserService } from '../user/user.service';
 import { CommentService } from 'src/comment/comment.service';
+import { WebSocketGatewayGateway } from 'src/web-socket-gateway/web-socket-gateway.gateway';
 @Injectable()
 export class LikeService {
   constructor(
     @InjectRepository(Like) private LikeRepository: Repository<Like>,
     private postService: PostService,
-    private commentService: CommentService
-
+    private commentService: CommentService,
+    private readonly webSocketGateway: WebSocketGatewayGateway,
   ) {}
   //좋아요 생성
   async createLikeService(
@@ -47,7 +48,15 @@ export class LikeService {
       post:{postId: postId},
       user,
     });
-    return await this.LikeRepository.save(newLike);
+    const likeSave  =  await this.LikeRepository.save(newLike);
+    //좋아요를 저장한 후에 알림을 보낸다, 포스트를 쓴 유저를 찾아야 함
+    const findPostUser = post.user.userId;
+    this.webSocketGateway.handleLikeNotification(
+      findPostUser,
+      user.username,
+      postId,
+    );
+    return likeSave;
   }
 
   //좋아요 삭제
@@ -78,6 +87,7 @@ export class LikeService {
     findlike.deleteAt = new Date();
     return await this.LikeRepository.save(findlike);
   }
+  //댓글에 좋아요
   async createLikeCommentService(
     categoryId: number,
     subCategoryId: number,
@@ -114,7 +124,9 @@ export class LikeService {
       comment: { commentId },
       user,
     });
-    return await this.LikeRepository.save(newLike);
+    const saveLike = this.LikeRepository.save(newLike);
+    this.webSocketGateway.handleCommentLikeNotification(comment.user.userId, user.username, commentId);
+    return saveLike;
   }
 
   //좋아요 삭제

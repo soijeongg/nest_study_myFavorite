@@ -186,7 +186,7 @@ export class SubCategoriesService {
       );
     }
     //서브 카테고리를 찾는다
-     return await this.subCategoriesRepostiory.findOne({
+    return await this.subCategoriesRepostiory.findOne({
       where: {
         subcategoriesId: subCategoryId,
         deleteAt: null,

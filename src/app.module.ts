@@ -13,6 +13,7 @@ import { FavoriteModule } from './favorite/favorite.module';
 import { CategoriesModule } from './categories/categories.module';
 import { SubCategoriesModule } from './sub-categories/sub-categories.module';
 import { SubSubCategoriesModule } from './sub-sub-categories/sub-sub-categories.module';
+import { WebSocketGatewayGateway } from './web-socket-gateway/web-socket-gateway.gateway';
 
 @Module({
   imports: [
@@ -31,6 +32,6 @@ import { SubSubCategoriesModule } from './sub-sub-categories/sub-sub-categories.
     SubSubCategoriesModule,
   ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [AppService, WebSocketGatewayGateway],
 })
 export class AppModule {}
