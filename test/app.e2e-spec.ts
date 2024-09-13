@@ -50,26 +50,18 @@ describe('AppController (e2e)', () => {
   });
 
   it('should upload favorite', async () => {
-    const filePath = path.resolve(__dirname, 'test.png');
     const response = await request(app.getHttpServer())
-      .post('/favorite')
+      .post('/categories/1/subCategories/1/subSubCategories/1/favorite/1/posts')
       .set('Authorization', `Bearer ${token}`)
-      .field('categories', 'Category1')
-      .field('name', 'Favorite Name')
-      .field('description', 'This is a test description')
-      .attach('file', filePath) // 파일 경로는 실제 파일 경로로 변경
+      .field('title', 'testPostTitle')
+      .field('description', 'test descriptiondescription')
       .expect(201);
-    const uploadedFileName = response.body.file; // 서버에서 응답한 파일 이름
-    const uploadedFilePath = path.resolve(__dirname, '../uploads', uploadedFileName);
     expect(response.body).toHaveProperty('favoriteId');
-    expect(response.body).toHaveProperty('categories', 'Category1');
-    expect(response.body).toHaveProperty('name', 'Favorite Name');
+    expect(response.body).toHaveProperty('title', 'testPostTitle');
     expect(response.body).toHaveProperty(
       'description',
-      'This is a test description',
+      'test descriptiondescription',
     );
-    expect(response.body).toHaveProperty('imageUrl');
-    expect(fs.existsSync(uploadedFilePath)).toBe(true);
   });
 
   //모든 테스트가 완료된 후  할 작업 정의
