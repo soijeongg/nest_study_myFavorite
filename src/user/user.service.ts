@@ -8,6 +8,7 @@ import { createUserDTO, loginDTO, updateUserDTO } from './DTO';
 import { IuserService } from './interface/IuserService';
 import { TokenBlacklist } from './entities/tokenBlacklist';
 import { userFavorite } from 'src/user/entities/userFavorite.entities';
+import { ConfigService } from '@nestjs/config';
 //서비스는 모든 비즈니스 로직을 처리한다  -> 레포지토리는 오직 db접근만
 @Injectable()
 export class UserService {
@@ -18,6 +19,7 @@ export class UserService {
     private tokenBlacklistRepository: Repository<TokenBlacklist>,
     @InjectRepository(userFavorite)
     private userFavoriteRepostiory: Repository<userFavorite>,
+    private configService: ConfigService,
   ) {}
   //TODO:로그인을 위한 이메일 검사 및 비밀번호 확인
   async validateUser(email: string, password: string): Promise<any> {
@@ -81,7 +83,10 @@ export class UserService {
     }
     const payload = { sub: user.userId, status: user.status };
     const accessToken = this.jwtService.sign(payload, { expiresIn: '1h' });
-    const refreshToken = this.jwtService.sign(payload, { expiresIn: '7d' });
+    const refreshToken = this.jwtService.sign(payload, {
+      secret: this.configService.get<string>('JWT_REFRESH_SECRET'),
+      expiresIn: '7d',
+    });
     return {
       access_token: accessToken,
       refresh_token: refreshToken,
