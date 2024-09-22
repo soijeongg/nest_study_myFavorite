@@ -15,9 +15,6 @@ export class Friend {
   @PrimaryGeneratedColumn()
   friendId: number;
 
-  @ManyToOne(() => User, (user) => user)
-  user: User; // 친구 관계의 유저 1
-
   @OneToMany(() => userFriends, (userFriends) => userFriends.friend)
   userFriends: userFriends;
 
